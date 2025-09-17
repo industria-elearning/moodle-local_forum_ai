@@ -105,6 +105,13 @@ class observer {
                 throw new \Exception('Datos incompletos para notificación');
             }
 
+            // Obtener el cmid del foro y el contexto del módulo
+            $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
+            $context = \context_module::instance($cm->id);
+
+            // Buscar usuarios con capacidad de responder en foros (profesores, managers, admins)
+            $recipients = get_users_by_capability($context, 'mod/forum:replypost');
+
             // URL para ver detalles y aprobar
             $review_url = new \moodle_url('/local/forum_ai/review.php', [
                 'token' => $approval_token
@@ -122,15 +129,16 @@ class observer {
             ]);
 
             // Preparar el mensaje
+            foreach ($recipients as $recipient) {
             $message = new \core\message\message();
             $message->component = 'local_forum_ai';
             $message->name = 'ai_approval_request';
             $message->userfrom = \core_user::get_noreply_user();
-            $message->userto = get_admin();
+            $message->userto = $recipient;
             $message->subject = 'Aprobación requerida: Respuesta AI';
 
-            $message->fullmessage = "Hola {$creator->firstname},\n\n"
-                . "Se ha generado una respuesta automática para tu debate \"{$discussion->name}\" "
+            $message->fullmessage = "Hola {$recipient->firstname},\n\n"
+                . "Se ha generado una respuesta automática para el debate \"{$discussion->name}\" "
                 . "en el foro \"{$forum->name}\" del curso \"{$course->fullname}\".\n\n"
                 . "Vista previa: " . format_string(substr(strip_tags($pending->message), 0, 100)) . "...\n\n"
                 . "Revisa y aprueba la respuesta en: {$review_url}\n\n"
@@ -175,20 +183,14 @@ class observer {
                 </div>
             ";
 
-            $message->smallmessage = "Nueva respuesta AI pendiente de aprobación en \"{$discussion->name}\"";
+            $message->smallmessage = "Nueva respuesta AI pendiente en \"{$discussion->name}\"";
             $message->contexturl = $review_url;
             $message->contexturlname = 'Revisar respuesta';
 
-            // Enviar la notificación
-            $messageid = message_send($message);
+            message_send($message);
+        }
 
-            if ($messageid) {
-                error_log("forum_ai: Notificación Moodle enviada exitosamente (ID: {$messageid}) a usuario {$creator->id}");
-                return true;
-            } else {
-                error_log("forum_ai: Error al enviar notificación Moodle a usuario {$creator->id}");
-                return false;
-            }
+        return true;
 
         } catch (\Exception $e) {
             error_log("forum_ai: Error al enviar notificación Moodle: " . $e->getMessage());

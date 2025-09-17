@@ -26,3 +26,4 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Forum AI';
+$string['pendinglist'] = 'Respuestas AI pendientes';
