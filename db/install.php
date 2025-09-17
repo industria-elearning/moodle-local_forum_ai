@@ -28,5 +28,9 @@
  */
 function xmldb_local_forum_ai_install() {
 
+    set_config('default_enabled', 0, 'local_forum_ai');
+    set_config('default_bot_userid', '', 'local_forum_ai');
+    set_config('default_reply_message', 'Gracias por tu participación. Un moderador revisará tu mensaje.', 'local_forum_ai');
+
     return true;
 }
