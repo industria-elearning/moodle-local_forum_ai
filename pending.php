@@ -65,9 +65,12 @@ foreach ($pendings as $p) {
             'action' => 'reject',
             'sesskey' => sesskey()
         ]))->out(false),
+        'viewdetails'    => get_string('viewdetails', 'local_forum_ai'),
+        'token' => $p->approval_token,
     ];
 }
 
 echo $OUTPUT->header();
 echo $OUTPUT->render_from_template('local_forum_ai/pending', $templatecontext);
+$PAGE->requires->js_call_amd('local_forum_ai/pending', 'init');
 echo $OUTPUT->footer();

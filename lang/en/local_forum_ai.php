@@ -36,4 +36,5 @@ $string['preview'] = 'Vista previa';
 $string['actions'] = 'Acciones';
 $string['approve'] = 'Aprobar';
 $string['reject'] = 'Rechazar';
+$string['viewdetails'] = 'Detalles';
 $string['noresponses'] = 'No hay respuestas pendientes de aprobación.';
