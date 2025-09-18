@@ -22,14 +22,15 @@
             <td>{{{discussionmsg}}}</td>
             <td>{{userfullname}}</td>
             <td>{{preview}}</td>
-            <td>
-                <button class="btn btn-success btn-sm action-btn"
-                        data-token="{{token}}" data-action="approve">{{approve}}</button>
-                <button class="btn btn-danger btn-sm action-btn"
-                        data-token="{{token}}" data-action="reject">{{reject}}</button>
-                <button class="btn btn-info btn-sm view-details" data-token="{{token}}">
-                    {{viewdetails}}
-                </button>
+            <td class="text-center">
+                <div class="d-flex flex-column align-items-center">
+                    <button class="btn btn-success btn-sm action-btn mb-2"
+                            data-token="{{token}}" data-action="approve">{{approve}}</button>
+                    <button class="btn btn-danger btn-sm action-btn mb-2"
+                            data-token="{{token}}" data-action="reject">{{reject}}</button>
+                    <button class="btn btn-info btn-sm view-details"
+                            data-token="{{token}}">{{viewdetails}}</button>
+                </div>
             </td>
         </tr>
     {{/pendings}}
