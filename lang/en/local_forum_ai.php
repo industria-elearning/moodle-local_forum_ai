@@ -27,3 +27,13 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Forum AI';
 $string['pendinglist'] = 'Respuestas AI pendientes';
+$string['pendingresponses'] = 'Respuestas AI pendientes';
+$string['coursename'] = 'Curso';
+$string['forumname'] = 'Foro';
+$string['discussionname'] = 'Debate';
+$string['username'] = 'Usuario';
+$string['preview'] = 'Vista previa';
+$string['actions'] = 'Acciones';
+$string['approve'] = 'Aprobar';
+$string['reject'] = 'Rechazar';
+$string['noresponses'] = 'No hay respuestas pendientes de aprobación.';

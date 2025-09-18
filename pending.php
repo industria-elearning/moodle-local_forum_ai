@@ -12,15 +12,13 @@ require_capability('mod/forum:replypost', $context);
 $PAGE->set_url('/local/forum_ai/pending.php', ['courseid' => $courseid]);
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('report');
-$PAGE->set_title('Respuestas AI pendientes');
-$PAGE->set_heading('Respuestas AI pendientes');
+$PAGE->set_title(get_string('pendingresponses', 'local_forum_ai'));
+$PAGE->set_heading(get_string('pendingresponses', 'local_forum_ai'));
 
-echo $OUTPUT->header();
-echo $OUTPUT->heading('Respuestas AI pendientes de aprobación');
-
-// Consultar todos los pendientes
 global $DB;
-$sql = "SELECT p.*, d.name AS discussionname, f.name AS forumname, c.fullname AS coursename, u.firstname, u.lastname
+
+$sql = "SELECT p.*, d.name AS discussionname, f.name AS forumname, c.fullname AS coursename,
+               u.firstname, u.lastname
           FROM {local_forum_ai_pending} p
           JOIN {forum_discussions} d ON d.id = p.discussionid
           JOIN {forum} f ON f.id = p.forumid
@@ -32,46 +30,44 @@ $sql = "SELECT p.*, d.name AS discussionname, f.name AS forumname, c.fullname AS
 $params = ['status' => 'pending'];
 $pendings = $DB->get_records_sql($sql, $params);
 
-if (!$pendings) {
-    echo $OUTPUT->notification('No hay respuestas pendientes de aprobación.', 'info');
-    echo $OUTPUT->footer();
-    exit;
-}
-
-// Construir tabla
-$table = new html_table();
-$table->head = [
-    'Curso', 'Foro', 'Debate', 'Usuario', 'Vista previa', 'Acciones'
+// Contexto para la plantilla.
+$templatecontext = [
+    // 'heading' => get_string('pendingresponses', 'local_forum_ai'),
+    'col_course' => get_string('coursename', 'local_forum_ai'),
+    'col_forum' => get_string('forumname', 'local_forum_ai'),
+    'col_discussion' => get_string('discussionname', 'local_forum_ai'),
+    'col_user' => get_string('username', 'local_forum_ai'),
+    'col_preview' => get_string('preview', 'local_forum_ai'),
+    'col_actions' => get_string('actions', 'local_forum_ai'),
+    'approve' => get_string('approve', 'local_forum_ai'),
+    'reject' => get_string('reject', 'local_forum_ai'),
+    'noresponses' => get_string('noresponses', 'local_forum_ai'),
+    'haspendings' => !empty($pendings),
+    'pendings' => [],
 ];
-$table->align = ['left', 'left', 'left', 'left', 'left', 'center'];
 
 foreach ($pendings as $p) {
-    $preview = shorten_text(strip_tags($p->message), 100);
+    $user = (object)['id' => $p->creator_userid, 'firstname' => $p->firstname, 'lastname' => $p->lastname];
 
-    $approveurl = new moodle_url('/local/forum_ai/approve.php', [
-        'token' => $p->approval_token,
-        'action' => 'approve',
-        'sesskey' => sesskey()
-    ]);
-
-    $rejecturl = new moodle_url('/local/forum_ai/approve.php', [
-        'token' => $p->approval_token,
-        'action' => 'reject',
-        'sesskey' => sesskey()
-    ]);
-
-    $row = [];
-    $row[] = format_string($p->coursename);
-    $row[] = format_string($p->forumname);
-    $row[] = format_string($p->discussionname);
-    $row[] = fullname($p);
-    $row[] = format_text($preview, FORMAT_PLAIN);
-    $row[] = html_writer::link($approveurl, '✅ Aprobar') . ' | ' .
-             html_writer::link($rejecturl, '❌ Rechazar');
-
-    $table->data[] = $row;
+    $templatecontext['pendings'][] = [
+        'coursename' => format_string($p->coursename),
+        'forumname' => format_string($p->forumname),
+        'discussionname' => format_string($p->discussionname),
+        'userfullname' => fullname($user),
+        'preview' => shorten_text(strip_tags($p->message), 100),
+        'approveurl' => (new moodle_url('/local/forum_ai/approve.php', [
+            'token' => $p->approval_token,
+            'action' => 'approve',
+            'sesskey' => sesskey()
+        ]))->out(false),
+        'rejecturl' => (new moodle_url('/local/forum_ai/approve.php', [
+            'token' => $p->approval_token,
+            'action' => 'reject',
+            'sesskey' => sesskey()
+        ]))->out(false),
+    ];
 }
 
-echo html_writer::table($table);
-
+echo $OUTPUT->header();
+echo $OUTPUT->render_from_template('local_forum_ai/pending', $templatecontext);
 echo $OUTPUT->footer();

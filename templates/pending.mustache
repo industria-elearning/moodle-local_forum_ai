@@ -1,0 +1,35 @@
+<h2>{{heading}}</h2>
+
+{{#haspendings}}
+<table class="generaltable">
+    <thead>
+        <tr>
+            <th>{{col_course}}</th>
+            <th>{{col_forum}}</th>
+            <th>{{col_discussion}}</th>
+            <th>{{col_user}}</th>
+            <th>{{col_preview}}</th>
+            <th>{{col_actions}}</th>
+        </tr>
+    </thead>
+    <tbody>
+    {{#pendings}}
+        <tr>
+            <td>{{coursename}}</td>
+            <td>{{forumname}}</td>
+            <td>{{discussionname}}</td>
+            <td>{{userfullname}}</td>
+            <td>{{preview}}</td>
+            <td>
+                <a href="{{approveurl}}" class="btn btn-success btn-sm">{{approve}}</a>
+                <a href="{{rejecturl}}" class="btn btn-danger btn-sm">{{reject}}</a>
+            </td>
+        </tr>
+    {{/pendings}}
+    </tbody>
+</table>
+{{/haspendings}}
+
+{{^haspendings}}
+<div class="alert alert-info">{{noresponses}}</div>
+{{/haspendings}}
