@@ -8,4 +8,13 @@ $functions = [
         'type'        => 'read',
         'ajax'        => true,
     ],
+
+    'local_forum_ai_approve_response' => [
+        'classname'   => 'local_forum_ai\\external\\approve_response',
+        'methodname'  => 'execute',
+        'classpath'   => '',
+        'description' => 'Aprueba o rechaza respuesta AI',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
 ];

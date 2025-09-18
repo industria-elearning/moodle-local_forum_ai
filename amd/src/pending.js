@@ -7,6 +7,7 @@ import Notification from 'core/notification';
  * Inicializa los listeners para mostrar detalles de respuestas AI.
  */
 export const init = () => {
+    // Botón de ver detalles (ya lo tenías)
     document.querySelectorAll('.view-details').forEach(btn => {
         btn.addEventListener('click', e => {
             const token = e.currentTarget.dataset.token;
@@ -19,15 +20,34 @@ export const init = () => {
                     type: ModalFactory.types.DEFAULT,
                     title: 'Detalles del debate',
                     body: renderDiscussion(data),
-                    large: true, // Hacer el modal más grande para mejor visualización
+                    large: true,
                 }).done(modal => {
                     modal.show();
                 });
             }).fail(Notification.exception);
         });
     });
-};
 
+    // Botones de aprobar/rechazar
+    document.querySelectorAll('.action-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.preventDefault();
+            const token = btn.dataset.token;
+            const action = btn.dataset.action;
+
+            Ajax.call([{
+                methodname: 'local_forum_ai_approve_response',
+                args: { token: token, action: action },
+            }])[0].done(() => {
+                // Quitar la fila de la tabla
+                const row = btn.closest('tr');
+                if (row) {
+                    row.remove();
+                }
+            }).fail(Notification.exception);
+        });
+    });
+};
 /**
  * Construye el HTML para el modal de detalles.
  *

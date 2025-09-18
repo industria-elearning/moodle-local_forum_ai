@@ -7,6 +7,7 @@
             <th>{{col_course}}</th>
             <th>{{col_forum}}</th>
             <th>{{col_discussion}}</th>
+            <th>{{col_message}}</th>
             <th>{{col_user}}</th>
             <th>{{col_preview}}</th>
             <th>{{col_actions}}</th>
@@ -18,11 +19,14 @@
             <td>{{coursename}}</td>
             <td>{{forumname}}</td>
             <td>{{discussionname}}</td>
+            <td>{{{discussionmsg}}}</td>
             <td>{{userfullname}}</td>
             <td>{{preview}}</td>
             <td>
-                <a href="{{approveurl}}" class="btn btn-success btn-sm">{{approve}}</a>
-                <a href="{{rejecturl}}" class="btn btn-danger btn-sm">{{reject}}</a>
+                <button class="btn btn-success btn-sm action-btn"
+                        data-token="{{token}}" data-action="approve">{{approve}}</button>
+                <button class="btn btn-danger btn-sm action-btn"
+                        data-token="{{token}}" data-action="reject">{{reject}}</button>
                 <button class="btn btn-info btn-sm view-details" data-token="{{token}}">
                     {{viewdetails}}
                 </button>

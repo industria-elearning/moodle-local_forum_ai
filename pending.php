@@ -17,15 +17,18 @@ $PAGE->set_heading(get_string('pendingresponses', 'local_forum_ai'));
 
 global $DB;
 
-$sql = "SELECT p.*, d.name AS discussionname, f.name AS forumname, c.fullname AS coursename,
-               u.firstname, u.lastname
+$sql = "SELECT p.*, d.name AS discussionname, f.name AS forumname,
+               c.fullname AS coursename, u.firstname, u.lastname,
+               fp.subject AS discussionsubject, fp.message AS discussionmessage, fp.messageformat
           FROM {local_forum_ai_pending} p
           JOIN {forum_discussions} d ON d.id = p.discussionid
           JOIN {forum} f ON f.id = p.forumid
           JOIN {course} c ON c.id = f.course
           JOIN {user} u ON u.id = p.creator_userid
+          JOIN {forum_posts} fp ON fp.id = d.firstpost
          WHERE p.status = :status
       ORDER BY p.timecreated DESC";
+
 
 $params = ['status' => 'pending'];
 $pendings = $DB->get_records_sql($sql, $params);
@@ -36,6 +39,7 @@ $templatecontext = [
     'col_course' => get_string('coursename', 'local_forum_ai'),
     'col_forum' => get_string('forumname', 'local_forum_ai'),
     'col_discussion' => get_string('discussionname', 'local_forum_ai'),
+    'col_message' => get_string('col_message', 'local_forum_ai'),
     'col_user' => get_string('username', 'local_forum_ai'),
     'col_preview' => get_string('preview', 'local_forum_ai'),
     'col_actions' => get_string('actions', 'local_forum_ai'),
@@ -53,18 +57,9 @@ foreach ($pendings as $p) {
         'coursename' => format_string($p->coursename),
         'forumname' => format_string($p->forumname),
         'discussionname' => format_string($p->discussionname),
+        'discussionmsg'   => format_text($p->discussionmessage, $p->messageformat),
         'userfullname' => fullname($user),
         'preview' => shorten_text(strip_tags($p->message), 100),
-        'approveurl' => (new moodle_url('/local/forum_ai/approve.php', [
-            'token' => $p->approval_token,
-            'action' => 'approve',
-            'sesskey' => sesskey()
-        ]))->out(false),
-        'rejecturl' => (new moodle_url('/local/forum_ai/approve.php', [
-            'token' => $p->approval_token,
-            'action' => 'reject',
-            'sesskey' => sesskey()
-        ]))->out(false),
         'viewdetails'    => get_string('viewdetails', 'local_forum_ai'),
         'token' => $p->approval_token,
     ];
