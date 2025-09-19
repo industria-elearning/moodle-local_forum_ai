@@ -109,3 +109,46 @@ function local_forum_ai_coursemodule_edit_post_actions($data, $course) {
 
     return $data;
 }
+
+/**
+ * Extiende la navegación de un curso para agregar enlace en Informes.
+ *
+ * @param navigation_node $navigation
+ * @param stdClass $course
+ * @param context_course $context
+ */
+function local_forum_ai_extend_navigation_course($navigation, $course, $context) {
+    global $PAGE;
+
+    // URL de nuestro reporte.
+    $url = new moodle_url('/local/forum_ai/pending.php', ['courseid' => $course->id]);
+
+    // Buscar nodo "Informes".
+    $reportsnode = $navigation->find('coursereports', navigation_node::TYPE_CONTAINER);
+    if (!$reportsnode) {
+        // Algunos temas lo llaman distinto.
+        $reportsnode = $navigation->find('courseadminreports', navigation_node::TYPE_CONTAINER);
+    }
+
+    if ($reportsnode) {
+        // Agregar enlace dentro de Informes.
+        $reportsnode->add(
+            get_string('pendingresponses', 'local_forum_ai'),
+            $url,
+            navigation_node::TYPE_SETTING,
+            null,
+            'local_forum_ai_pending',
+            new pix_icon('i/report', '')
+        );
+    } else {
+        // Si no existe "Informes", lo agregamos en la raíz de navegación del curso.
+        $navigation->add(
+            get_string('pendingresponses', 'local_forum_ai'),
+            $url,
+            navigation_node::TYPE_SETTING,
+            null,
+            'local_forum_ai_pending',
+            new pix_icon('i/report', '')
+        );
+    }
+}
