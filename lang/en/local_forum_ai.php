@@ -39,3 +39,8 @@ $string['approve'] = 'Aprobar';
 $string['reject'] = 'Rechazar';
 $string['viewdetails'] = 'Detalles';
 $string['noresponses'] = 'No hay respuestas pendientes de aprobación.';
+$string['datacurso_custom'] = 'Datacurso Forum AI';
+$string['enabled'] = 'Habilitar AI';
+$string['bot_userid'] = 'ID Usuario Bot';
+$string['reply_message'] = 'Mensaje base';
+
