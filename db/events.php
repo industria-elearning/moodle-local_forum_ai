@@ -9,4 +9,11 @@ $observers = [
         'internal'    => false,
         'priority'    => 9999,
     ],
+    [
+        'eventname'   => '\core\event\course_module_created',
+        'callback'    => '\local_forum_ai\observer::course_module_created',
+        'includefile' => '/local/forum_ai/classes/observer.php',
+        'internal'    => false,
+        'priority'    => 9999,
+    ],
 ];

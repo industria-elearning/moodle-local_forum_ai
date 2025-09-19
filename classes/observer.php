@@ -4,8 +4,66 @@ namespace local_forum_ai;
 defined('MOODLE_INTERNAL') || die();
 
 use mod_forum\event\discussion_created;
+// use core\event\course_module_created;
 
 class observer {
+
+     /**
+     * Maneja la creación de foros de tipo "single".
+     */
+    public static function course_module_created(\core\event\course_module_created $event) {
+    global $DB;
+
+    try {
+        // Solo nos interesa si es un foro.
+        if ($event->other['modulename'] !== 'forum') {
+            return true;
+        }
+
+        $forumid = $event->other['instanceid'];
+        $forum = $DB->get_record('forum', ['id' => $forumid], '*', MUST_EXIST);
+
+        // Solo procesar si es de tipo "single".
+        if ($forum->type !== 'single') {
+            return true;
+        }
+
+        // Reintentar hasta encontrar la discusión inicial.
+        $max_attempts = 5;
+        $discussion = null;
+
+        for ($i = 0; $i < $max_attempts; $i++) {
+            $discussion = $DB->get_record('forum_discussions', ['forum' => $forum->id], '*', IGNORE_MULTIPLE);
+            if ($discussion) {
+                break;
+            }
+            sleep(1); // esperar 1 segundo
+        }
+
+        if (!$discussion) {
+            error_log("forum_ai: No se encontró discusión inicial para foro tipo single ID {$forum->id}");
+            return true;
+        }
+
+        // Simular evento discussion_created para reutilizar la lógica existente.
+        $fakeevent = \mod_forum\event\discussion_created::create([
+            'objectid'      => $discussion->id,
+            'context'       => $event->get_context(),
+            'courseid'      => $event->courseid,
+            'relateduserid' => $discussion->userid,
+            'other'         => ['forumid' => $forumid],
+        ]);
+
+        self::discussion_created($fakeevent);
+
+        return true;
+
+    } catch (\Exception $e) {
+        error_log("forum_ai: Error en course_module_created: " . $e->getMessage());
+        return false;
+    }
+}
+
 
     public static function discussion_created(discussion_created $event) {
         global $DB, $CFG, $USER;
