@@ -44,3 +44,11 @@ $string['enabled'] = 'Habilitar AI';
 $string['bot_userid'] = 'ID Usuario Bot';
 $string['reply_message'] = 'Mensaje base';
 
+$string['historyresponses'] = 'Historial de respuestas AI';
+$string['status'] = 'Estado';
+$string['nohistory'] = 'No hay historial de respuestas AI aprobadas o rechazadas.';
+$string['discussionmsg'] = 'Mensaje hecho por IA';
+
+$string['statusapproved'] = 'Aprobado';
+$string['statusrejected'] = 'Rechazado';
+$string['statuspending']  = 'Pendiente';

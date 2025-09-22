@@ -1,0 +1,38 @@
+<h2>{{heading}}</h2>
+
+{{#hashistory}}
+<table class="generaltable">
+    <thead>
+        <tr>
+            <th>{{col_course}}</th>
+            <th>{{col_forum}}</th>
+            <th>{{col_discussion}}</th>
+            <th>{{col_message}}</th>
+            <th>{{col_user}}</th>
+            <th>{{col_status}}</th>
+            <th>{{col_actions}}</th>
+        </tr>
+    </thead>
+    <tbody>
+    {{#responses}}
+        <tr>
+            <td>{{coursename}}</td>
+            <td>{{forumname}}</td>
+            <td>{{discussionname}}</td>
+            <td>{{discussionmsg}}</td>
+            <td>{{userfullname}}</td>
+            <td>{{status}}</td>
+            <td>
+                <button class="btn btn-info btn-sm view-details" data-token="{{token}}">
+                    {{viewdetails}}
+                </button>
+            </td>
+        </tr>
+    {{/responses}}
+    </tbody>
+</table>
+{{/hashistory}}
+
+{{^hashistory}}
+<div class="alert alert-info">{{noresponses}}</div>
+{{/hashistory}}

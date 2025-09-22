@@ -121,33 +121,52 @@ function local_forum_ai_extend_navigation_course($navigation, $course, $context)
     global $PAGE;
 
     // URL de nuestro reporte.
-    $url = new moodle_url('/local/forum_ai/pending.php', ['courseid' => $course->id]);
+    // $url = new moodle_url('/local/forum_ai/pending.php', ['courseid' => $course->id]);
+    $pendingurl = new moodle_url('/local/forum_ai/pending.php');
+    $historyurl = new moodle_url('/local/forum_ai/history.php');
 
     // Buscar nodo "Informes".
     $reportsnode = $navigation->find('coursereports', navigation_node::TYPE_CONTAINER);
     if (!$reportsnode) {
-        // Algunos temas lo llaman distinto.
         $reportsnode = $navigation->find('courseadminreports', navigation_node::TYPE_CONTAINER);
     }
 
     if ($reportsnode) {
-        // Agregar enlace dentro de Informes.
+        // Agregar enlaces dentro de Informes.
         $reportsnode->add(
             get_string('pendingresponses', 'local_forum_ai'),
-            $url,
+            $pendingurl,
             navigation_node::TYPE_SETTING,
             null,
             'local_forum_ai_pending',
             new pix_icon('i/report', '')
         );
+
+        $reportsnode->add(
+            get_string('historyresponses', 'local_forum_ai'),
+            $historyurl,
+            navigation_node::TYPE_SETTING,
+            null,
+            'local_forum_ai_history',
+            new pix_icon('i/report', '')
+        );
     } else {
-        // Si no existe "Informes", lo agregamos en la raíz de navegación del curso.
+        // Si no existe "Informes", los agregamos en la raíz.
         $navigation->add(
             get_string('pendingresponses', 'local_forum_ai'),
-            $url,
+            $pendingurl,
             navigation_node::TYPE_SETTING,
             null,
             'local_forum_ai_pending',
+            new pix_icon('i/report', '')
+        );
+
+        $navigation->add(
+            get_string('historyresponses', 'local_forum_ai'),
+            $historyurl,
+            navigation_node::TYPE_SETTING,
+            null,
+            'local_forum_ai_history',
             new pix_icon('i/report', '')
         );
     }

@@ -9,7 +9,8 @@ $courseid = optional_param('courseid', 0, PARAM_INT);
 $context = $courseid ? context_course::instance($courseid) : context_system::instance();
 require_capability('mod/forum:replypost', $context);
 
-$PAGE->set_url('/local/forum_ai/pending.php', ['courseid' => $courseid]);
+// $PAGE->set_url('/local/forum_ai/pending.php', ['courseid' => $courseid]);
+$PAGE->set_url('/local/forum_ai/pending.php');
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('report');
 $PAGE->set_title(get_string('pendingresponses', 'local_forum_ai'));
