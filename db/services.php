@@ -17,4 +17,12 @@ $functions = [
         'type'        => 'write',
         'ajax'        => true,
     ],
+    'local_forum_ai_update_response' => [
+        'classname'   => 'local_forum_ai\\external\\update_response',
+        'methodname'  => 'execute',
+        'classpath'   => '',
+        'description' => 'Actualiza el mensaje generado por la IA en un pending',
+        'type'        => 'write',
+        'ajax'        => true,
+    ],
 ];

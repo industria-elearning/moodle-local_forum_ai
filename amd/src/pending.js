@@ -68,8 +68,47 @@ function renderDiscussion(data) {
     }
 
     html += `<div class="alert alert-primary mt-4">
-               <h5>Respuesta AI propuesta</h5>
-               ${data.airesponse}
+               <h5><i class="fa-solid fa-robot"></i>Respuesta AI propuesta 
+                   <button class="btn btn-sm btn-link edit-ai" data-token="${data.token}">
+                     <i class="fa fa-pencil"></i>
+                   </button>
+               </h5>
+               <div id="airesponse-content" data-token="${data.token}">${data.airesponse}</div>
              </div>`;
     return html;
 }
+
+// Delegamos evento para edición
+document.addEventListener('click', e => {
+    if (e.target.closest('.edit-ai')) {
+        const btn = e.target.closest('.edit-ai');
+        const token = btn.dataset.token;
+        const container = document.getElementById('airesponse-content');
+        const currentText = container.innerHTML;
+
+        // Reemplazar contenido por textarea y botón guardar
+        container.innerHTML = `
+            <textarea id="airesponse-edit" class="form-control" rows="5">${currentText}</textarea>
+            <button class="btn btn-success btn-sm mt-2 save-ai" data-token="${token}">
+              <i class="fa-solid fa-floppy-disk"></i>
+            </button>
+        `;
+    }
+
+    if (e.target.closest('.save-ai')) {
+        const btn = e.target.closest('.save-ai');
+        const token = btn.dataset.token;
+        const newMessage = document.getElementById('airesponse-edit').value;
+
+        Ajax.call([{
+            methodname: 'local_forum_ai_update_response',
+            args: { token: token, message: newMessage },
+        }])[0].done(response => {
+            const container = document.getElementById('airesponse-content');
+            container.innerHTML = response.message;
+            // Opcional: recargar página para ver en tabla
+            location.reload();
+        }).fail(Notification.exception);
+    }
+});
+

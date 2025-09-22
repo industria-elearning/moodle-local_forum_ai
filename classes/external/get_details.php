@@ -45,6 +45,7 @@ class get_details extends external_api {
             'discussion' => format_string($discussion->name),
             'posts' => self::build_hierarchical_posts($posts),
             'airesponse' => format_text($pending->message, FORMAT_HTML),
+            'token' => $pending->approval_token,
             'status' => $pending->status,
         ];
 
@@ -160,6 +161,7 @@ class get_details extends external_api {
                 ])
             ),
             'airesponse' => new external_value(PARAM_RAW, 'Respuesta AI propuesta'),
+            'token' => new external_value(PARAM_ALPHANUMEXT, 'Token de aprobación'),
             'status' => new external_value(PARAM_ALPHA, 'Estado del mensaje (pending, approved, rejected)'),
         ]);
     }
