@@ -101,8 +101,11 @@ class observer {
             $ai_response = self::generate_ai_response($original_post, $reply_message, $config);
 
             if ($require_approval) {
-                self::create_approval_request($discussion, $bot_userid, $ai_response);
+                // Caso normal: pendiente de aprobación
+                self::create_approval_request($discussion, $bot_userid, $ai_response, 'pending');
             } else {
+                // Insertamos como aprobado y publicamos directamente
+                self::create_approval_request($discussion, $bot_userid, $ai_response, 'approved');
                 self::create_auto_reply($discussion, $bot_userid, $ai_response);
             }
 
@@ -117,7 +120,7 @@ class observer {
     /**
      * Crea solicitud de aprobación y envía notificación Moodle
      */
-    private static function create_approval_request($discussion, $bot_userid, $message) {
+    private static function create_approval_request($discussion, $bot_userid, $message, $status = 'pending') {
         global $DB, $CFG;
 
         try {
@@ -130,14 +133,16 @@ class observer {
             $pending->bot_userid = $bot_userid;
             $pending->subject = "Re: " . $discussion->name;
             $pending->message = $message;
-            $pending->status = 'pending';
+            $pending->status = $status;
             $pending->approval_token = $approval_token;
             $pending->timecreated = time();
 
             $pending_id = $DB->insert_record('local_forum_ai_pending', $pending);
 
-            // Enviar notificación nativa de Moodle
-            self::send_moodle_notification($discussion, $pending_id, $approval_token);
+            // Solo enviar notificación si está pendiente
+            if ($status === 'pending') {
+                self::send_moodle_notification($discussion, $pending_id, $approval_token);
+            }
 
             error_log("forum_ai: Solicitud de aprobación creada con ID {$pending_id}");
 

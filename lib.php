@@ -48,8 +48,8 @@ function local_forum_ai_extend_settings_navigation(settings_navigation $nav, con
 /**
  * Extiende el formulario de configuración de un foro.
  *
- * @param MoodleQuickForm $mform
  * @param mod_forum_mod_form $formwrapper
+ * @param MoodleQuickForm $mform
  */
 function local_forum_ai_coursemodule_standard_elements($formwrapper, $mform) {
     // Solo aplicamos a foros.
@@ -62,8 +62,21 @@ function local_forum_ai_coursemodule_standard_elements($formwrapper, $mform) {
 
     // Habilitar AI.
     $mform->addElement('select', 'local_forum_ai_enabled',
-        get_string('enabled', 'local_forum_ai'), [0 => get_string('no'), 1 => get_string('yes')]);
+        get_string('enabled', 'local_forum_ai'), [
+            0 => get_string('no'),
+            1 => get_string('yes')
+        ]
+    );
     $mform->setDefault('local_forum_ai_enabled', 0);
+
+    // Revisar respuesta IA.
+    $mform->addElement('select', 'local_forum_ai_require_approval',
+        get_string('require_approval', 'local_forum_ai'), [
+            1 => get_string('yes'),
+            0 => get_string('no')
+        ]
+    );
+    $mform->setDefault('local_forum_ai_require_approval', 1);
 
     // Usuario Bot.
     $mform->addElement('text', 'local_forum_ai_bot_userid', get_string('bot_userid', 'local_forum_ai'));
@@ -74,6 +87,7 @@ function local_forum_ai_coursemodule_standard_elements($formwrapper, $mform) {
         get_string('reply_message', 'local_forum_ai'), 'wrap="virtual" rows="3" cols="50"');
     $mform->setType('local_forum_ai_reply_message', PARAM_TEXT);
 }
+
 
 
 /**

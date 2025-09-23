@@ -7,8 +7,8 @@ $action = optional_param('action', 'view', PARAM_ALPHA);
 
 try {
     // Verificar foro existe
-    $forum = $DB->get_record('forum', array('id' => $forumid), '*', MUST_EXIST);
-    $course = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
+    $forum = $DB->get_record('forum', ['id' => $forumid], '*', MUST_EXIST);
+    $course = $DB->get_record('course', ['id' => $forum->course], '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
 } catch (Exception $e) {
     print_error('invalidforumid', 'forum');
@@ -18,11 +18,11 @@ require_login($course, true, $cm);
 $context = context_module::instance($cm->id);
 require_capability('mod/forum:addquestion', $context);
 
-$PAGE->set_url('/local/forum_ai/config.php', array('forumid' => $forumid));
+$PAGE->set_url('/local/forum_ai/config.php', ['forumid' => $forumid]);
 $PAGE->set_title(get_string('pluginname', 'local_forum_ai'));
 $PAGE->set_heading($course->fullname);
 $PAGE->set_context($context);
-$PAGE->navbar->add($forum->name, new moodle_url('/mod/forum/view.php', array('id' => $cm->id)));
+$PAGE->navbar->add($forum->name, new moodle_url('/mod/forum/view.php', ['id' => $cm->id]));
 $PAGE->navbar->add(get_string('pluginname', 'local_forum_ai'));
 
 // Verificar si la tabla existe
@@ -42,10 +42,11 @@ if ($action === 'save' && confirm_sesskey()) {
     $bot_userid = optional_param('bot_userid', null, PARAM_INT);
     $reply_message = optional_param('reply_message', '', PARAM_TEXT);
     $ai_model = optional_param('ai_model', 'gpt-3.5', PARAM_TEXT);
+    $require_approval = optional_param('require_approval', 1, PARAM_INT);
 
     try {
         // Verificar si ya existe configuración para este foro
-        $existing = $DB->get_record('local_forum_ai_config', array('forumid' => $forumid));
+        $existing = $DB->get_record('local_forum_ai_config', ['forumid' => $forumid]);
 
         $record = new stdClass();
         $record->forumid = $forumid;
@@ -53,6 +54,7 @@ if ($action === 'save' && confirm_sesskey()) {
         $record->bot_userid = empty($bot_userid) ? null : $bot_userid;
         $record->reply_message = $reply_message;
         $record->ai_model = $ai_model;
+        $record->require_approval = $require_approval;
         $record->timemodified = time();
 
         if ($existing) {
@@ -79,11 +81,15 @@ $config->enabled = 0;
 $config->bot_userid = '';
 $config->reply_message = 'Gracias por tu participación. Un moderador revisará tu mensaje.';
 $config->ai_model = 'gpt-3.5';
+$config->require_approval = 1;
 
 try {
-    $existing_config = $DB->get_record('local_forum_ai_config', array('forumid' => $forumid));
+    $existing_config = $DB->get_record('local_forum_ai_config', ['forumid' => $forumid]);
     if ($existing_config) {
         $config = $existing_config;
+        if (!isset($config->require_approval)) {
+            $config->require_approval = 1; // Valor por defecto si falta
+        }
     }
 } catch (Exception $e) {
     // Usar valores por defecto si hay error
@@ -92,7 +98,7 @@ try {
 echo $OUTPUT->header();
 echo $OUTPUT->heading('Configuración Forum AI para: ' . format_string($forum->name));
 
-// Resto del formulario igual...
+// Resto del formulario
 echo '<div class="container-fluid">';
 echo '<form method="post" action="' . $PAGE->url . '" class="form">';
 echo '<input type="hidden" name="action" value="save">';
@@ -107,18 +113,26 @@ echo '</select>';
 echo '</div>';
 
 echo '<div class="form-group">';
+echo '<label for="require_approval">Revisar respuesta IA</label>';
+echo '<select name="require_approval" id="require_approval" class="form-control">';
+echo '<option value="1"' . ($config->require_approval == 1 ? ' selected' : '') . '>Sí</option>';
+echo '<option value="0"' . ($config->require_approval == 0 ? ' selected' : '') . '>No</option>';
+echo '</select>';
+echo '</div>';
+
+echo '<div class="form-group">';
 echo '<label for="bot_userid">ID Usuario Bot</label>';
 echo '<input type="number" name="bot_userid" id="bot_userid" value="' . s($config->bot_userid) . '" class="form-control">';
 echo '</div>';
 
 echo '<div class="form-group">';
-echo '<label for="reply_message">Mensaje base</label>';
+echo '<label for="reply_message">Dale indicaciones a la IA</label>';
 echo '<textarea name="reply_message" id="reply_message" rows="4" class="form-control">' . s($config->reply_message) . '</textarea>';
 echo '</div>';
 
 echo '<div class="form-group">';
 echo '<button type="submit" class="btn btn-primary">Guardar</button> ';
-echo '<a href="' . new moodle_url('/mod/forum/view.php', array('id' => $cm->id)) . '" class="btn btn-secondary">Cancelar</a>';
+echo '<a href="' . new moodle_url('/mod/forum/view.php', ['id' => $cm->id]) . '" class="btn btn-secondary">Cancelar</a>';
 echo '</div>';
 
 echo '</form>';

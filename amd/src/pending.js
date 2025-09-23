@@ -1,4 +1,3 @@
-
 import ModalFactory from 'core/modal_factory';
 import Ajax from 'core/ajax';
 import Notification from 'core/notification';
@@ -8,7 +7,7 @@ import { renderPost } from './utils/renderPost';
  * Inicializa los listeners para mostrar detalles de respuestas AI.
  */
 export const init = () => {
-    // Botón de ver detalles (ya lo tenías)
+    // Botón de ver detalles
     document.querySelectorAll('.view-details').forEach(btn => {
         btn.addEventListener('click', e => {
             const token = e.currentTarget.dataset.token;
@@ -24,6 +23,9 @@ export const init = () => {
                     large: true,
                 }).done(modal => {
                     modal.show();
+
+                    // Reasignar eventos para este modal
+                    initAiEditHandlers(modal.getRoot(), data.token);
                 });
             }).fail(Notification.exception);
         });
@@ -40,7 +42,6 @@ export const init = () => {
                 methodname: 'local_forum_ai_approve_response',
                 args: { token: token, action: action },
             }])[0].done(() => {
-                // Quitar la fila de la tabla
                 const row = btn.closest('tr');
                 if (row) {
                     row.remove();
@@ -49,11 +50,18 @@ export const init = () => {
         });
     });
 };
+
 /**
  * Construye el HTML para el modal de detalles.
  *
- * @param {Object} data Datos recibidos del servicio AJAX
- * @returns {string} HTML
+ * @param {Object} data - Datos recibidos del servicio AJAX.
+ * @param {string} data.course - Nombre del curso.
+ * @param {string} data.forum - Nombre del foro.
+ * @param {string} data.discussion - Título del debate.
+ * @param {Array<Object>} data.posts - Lista de posts del debate.
+ * @param {string} data.airesponse - Respuesta AI propuesta.
+ * @param {string} data.token - Token único de aprobación asociado.
+ * @returns {string} HTML a renderizar dentro del modal.
  */
 function renderDiscussion(data) {
     let html = `<h4>${data.course} / ${data.forum}</h4>
@@ -68,7 +76,7 @@ function renderDiscussion(data) {
     }
 
     html += `<div class="alert alert-primary mt-4">
-               <h5><i class="fa-solid fa-robot"></i>Respuesta AI propuesta 
+               <h5><i class="fa-solid fa-robot"></i> Respuesta AI propuesta
                    <button class="btn btn-sm btn-link edit-ai" data-token="${data.token}">
                      <i class="fa fa-pencil"></i>
                    </button>
@@ -78,37 +86,41 @@ function renderDiscussion(data) {
     return html;
 }
 
-// Delegamos evento para edición
-document.addEventListener('click', e => {
-    if (e.target.closest('.edit-ai')) {
-        const btn = e.target.closest('.edit-ai');
-        const token = btn.dataset.token;
-        const container = document.getElementById('airesponse-content');
-        const currentText = container.innerHTML;
 
-        // Reemplazar contenido por textarea y botón guardar
-        container.innerHTML = `
+/**
+ * Inicializa los handlers para editar/guardar dentro de un modal específico.
+ *
+ * @param {object} root - El contenedor raíz del modal (jQuery-wrapped).
+ * @param {string} token - El token único de aprobación asociado a la respuesta AI.
+ */
+function initAiEditHandlers(root, token) {
+    // Editar mensaje
+    root.on('click', '.edit-ai', e => {
+        e.preventDefault();
+        const content = root.find('#airesponse-content');
+        const currentText = content.html().trim();
+
+        content.html(`
             <textarea id="airesponse-edit" class="form-control" rows="5">${currentText}</textarea>
             <button class="btn btn-success btn-sm mt-2 save-ai" data-token="${token}">
-              <i class="fa-solid fa-floppy-disk"></i>
+              <i class="fa-solid fa-floppy-disk"></i> Guardar
             </button>
-        `;
-    }
+        `);
+    });
 
-    if (e.target.closest('.save-ai')) {
-        const btn = e.target.closest('.save-ai');
-        const token = btn.dataset.token;
-        const newMessage = document.getElementById('airesponse-edit').value;
+    // Guardar cambios
+    root.on('click', '.save-ai', e => {
+        e.preventDefault();
+        const newMessage = root.find('#airesponse-edit').val();
 
         Ajax.call([{
             methodname: 'local_forum_ai_update_response',
             args: { token: token, message: newMessage },
         }])[0].done(response => {
-            const container = document.getElementById('airesponse-content');
-            container.innerHTML = response.message;
-            // Opcional: recargar página para ver en tabla
+            root.find('#airesponse-content').html(response.message);
+
+            // Opcional: refrescar la tabla completa
             location.reload();
         }).fail(Notification.exception);
-    }
-});
-
+    });
+}

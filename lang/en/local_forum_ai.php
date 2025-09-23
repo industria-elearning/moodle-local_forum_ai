@@ -42,7 +42,8 @@ $string['noresponses'] = 'No hay respuestas pendientes de aprobación.';
 $string['datacurso_custom'] = 'Datacurso Forum AI';
 $string['enabled'] = 'Habilitar AI';
 $string['bot_userid'] = 'ID Usuario Bot';
-$string['reply_message'] = 'Mensaje base';
+$string['reply_message'] = 'Dale indicaciones a la IA';
+$string['require_approval'] = 'Revisar respuesta IA';
 
 $string['historyresponses'] = 'Historial de respuestas AI';
 $string['status'] = 'Estado';
