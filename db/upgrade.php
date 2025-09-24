@@ -39,7 +39,7 @@ function xmldb_local_forum_ai_upgrade($oldversion) {
     // Documentation for the XMLDB Editor can be found at {@link https://docs.moodle.org/dev/XMLDB_editor}.
 
     if ($oldversion < 2025091611) {
-        // Define table local_forum_ai_config to be created.
+
         $table = new xmldb_table('local_forum_ai_config');
 
         // Adding fields to table local_forum_ai_config.
@@ -61,12 +61,6 @@ function xmldb_local_forum_ai_upgrade($oldversion) {
             $dbman->create_table($table);
         }
 
-        // Forum_ai savepoint reached.
-        upgrade_plugin_savepoint(true, 2025091611, 'local', 'forum_ai');
-    }
-
-    if ($oldversion < 2025091611) {
-        // Define table local_forum_ai_pending to be created.
         $table = new xmldb_table('local_forum_ai_pending');
 
         // Adding fields to table local_forum_ai_pending.
@@ -93,7 +87,6 @@ function xmldb_local_forum_ai_upgrade($oldversion) {
             $dbman->create_table($table);
         }
 
-        // Forum_ai savepoint reached.
         upgrade_plugin_savepoint(true, 2025091611, 'local', 'forum_ai');
     }
 
