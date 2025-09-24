@@ -155,44 +155,56 @@ class observer {
      * Envía notificación usando el sistema nativo de Moodle
      */
     private static function send_moodle_notification($discussion, $pending_id, $approval_token) {
-        global $DB, $CFG;
+    global $DB, $CFG;
 
-        try {
-            // Obtener datos necesarios
-            $creator = $DB->get_record('user', ['id' => $discussion->userid]);
-            $forum = $DB->get_record('forum', ['id' => $discussion->forum]);
-            $course = $DB->get_record('course', ['id' => $forum->course]);
-            $pending = $DB->get_record('local_forum_ai_pending', ['id' => $pending_id]);
+    try {
+        // Obtener datos necesarios
+        $creator = $DB->get_record('user', ['id' => $discussion->userid]);
+        $forum = $DB->get_record('forum', ['id' => $discussion->forum]);
+        $course = $DB->get_record('course', ['id' => $forum->course]);
+        $pending = $DB->get_record('local_forum_ai_pending', ['id' => $pending_id]);
 
-            if (!$creator || !$forum || !$course || !$pending) {
-                throw new \Exception('Datos incompletos para notificación');
+        if (!$creator || !$forum || !$course || !$pending) {
+            throw new \Exception('Datos incompletos para notificación');
+        }
+
+        // Obtener el cmid del foro y el contexto del módulo
+        $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
+        $context = \context_module::instance($cm->id);
+
+        // Buscar usuarios con capacidad
+        $recipients = get_users_by_capability($context, 'mod/forum:replypost');
+
+        // Filtrar por roles permitidos
+        $allowedroles = ['manager', 'editingteacher', 'coursecreator'];
+        $finalrecipients = [];
+
+        foreach ($recipients as $recipient) {
+            $roles = get_user_roles($context, $recipient->id);
+            foreach ($roles as $role) {
+                if (in_array($role->shortname, $allowedroles)) {
+                    $finalrecipients[$recipient->id] = $recipient;
+                }
             }
+        }
 
-            // Obtener el cmid del foro y el contexto del módulo
-            $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
-            $context = \context_module::instance($cm->id);
+        // URL para ver detalles y aprobar
+        $review_url = new \moodle_url('/local/forum_ai/review.php', [
+            'token' => $approval_token
+        ]);
 
-            // Buscar usuarios con capacidad de responder en foros (profesores, managers, admins)
-            $recipients = get_users_by_capability($context, 'mod/forum:replypost');
+        $approve_url = new \moodle_url('/local/forum_ai/approve.php', [
+            'token' => $approval_token,
+            'action' => 'approve'
+        ]);
 
-            // URL para ver detalles y aprobar
-            $review_url = new \moodle_url('/local/forum_ai/review.php', [
-                'token' => $approval_token
-            ]);
+        $reject_url = new \moodle_url('/local/forum_ai/approve.php', [
+            'token' => $approval_token,
+            'action' => 'reject'
+        ]);
 
-            // URLs rápidas (opcional, para botones directos)
-            $approve_url = new \moodle_url('/local/forum_ai/approve.php', [
-                'token' => $approval_token,
-                'action' => 'approve'
-            ]);
-
-            $reject_url = new \moodle_url('/local/forum_ai/approve.php', [
-                'token' => $approval_token,
-                'action' => 'reject'
-            ]);
-
-            // Preparar el mensaje
-            foreach ($recipients as $recipient) {
+        // Mandar mensaje solo a los permitidos
+        foreach ($finalrecipients as $recipient) {
             $message = new \core\message\message();
             $message->component = 'local_forum_ai';
             $message->name = 'ai_approval_request';
@@ -214,9 +226,9 @@ class observer {
                 <div style='font-family: Arial, sans-serif; max-width: 600px;'>
                     <h3 style='color: #0f6cbf;'>🤖 Aprobación requerida: Respuesta AI</h3>
 
-                    <p><strong>Hola {$creator->firstname},</strong></p>
+                    <p><strong>Hola {$recipient->firstname},</strong></p>
 
-                    <p>Se ha generado una respuesta automática para tu debate
+                    <p>Se ha generado una respuesta automática para el debate
                     <strong>\"{$discussion->name}\"</strong> en el foro
                     <strong>\"{$forum->name}\"</strong>.</p>
 
@@ -229,16 +241,16 @@ class observer {
 
                     <div style='margin: 20px 0;'>
                         <a href='{$review_url}' style='background-color: #0f6cbf; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; display: inline-block; margin-right: 10px;'>
-                            📋 Ver completa y decidir
+                            Ver completa y decidir
                         </a>
                     </div>
 
                     <div style='margin: 15px 0;'>
                         <a href='{$approve_url}' style='background-color: #28a745; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; margin-right: 8px; font-size: 0.9em;'>
-                            ✅ Aprobar
+                            Aprobar
                         </a>
                         <a href='{$reject_url}' style='background-color: #dc3545; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; font-size: 0.9em;'>
-                            ❌ Rechazar
+                            Rechazar
                         </a>
                     </div>
 
@@ -255,11 +267,12 @@ class observer {
 
         return true;
 
-        } catch (\Exception $e) {
-            error_log("forum_ai: Error al enviar notificación Moodle: " . $e->getMessage());
-            return false;
-        }
+    } catch (\Exception $e) {
+        error_log("forum_ai: Error al enviar notificación Moodle: " . $e->getMessage());
+        return false;
     }
+}
+
 
     private static function generate_ai_response($original_post, $base_message, $config = null) {
         if (empty($base_message)) {

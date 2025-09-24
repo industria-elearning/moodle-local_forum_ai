@@ -11,18 +11,30 @@ try {
     $pending = $DB->get_record('local_forum_ai_pending',
         ['approval_token' => $token, 'status' => 'pending'], '*', MUST_EXIST);
 
-    if ($USER->id != $pending->creator_userid) {
-        throw new moodle_exception('nopermission', 'error');
-    }
-
     $discussion = $DB->get_record('forum_discussions', ['id' => $pending->discussionid], '*', MUST_EXIST);
     $forum = $DB->get_record('forum', ['id' => $pending->forumid], '*', MUST_EXIST);
     $course = $DB->get_record('course', ['id' => $forum->course], '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
     $original_post = $DB->get_record('forum_posts', ['id' => $discussion->firstpost], '*', MUST_EXIST);
     $bot_user = $DB->get_record('user', ['id' => $pending->bot_userid], '*', MUST_EXIST);
+    $author = $DB->get_record('user', ['id' => $original_post->userid], '*', MUST_EXIST);
 
     $context = context_course::instance($course->id);
+
+    $roles = get_user_roles($context, $USER->id);
+    $allowedroles = ['manager', 'editingteacher', 'coursecreator'];
+    $hasrole = false;
+    foreach ($roles as $role) {
+        if (in_array($role->shortname, $allowedroles)) {
+            $hasrole = true;
+            break;
+        }
+    }
+
+    if ($USER->id != $pending->creator_userid && !$hasrole) {
+        throw new moodle_exception('nopermission', 'local_forum_ai');
+    }
+
     $PAGE->set_url('/local/forum_ai/review.php', ['token' => $token]);
     $PAGE->set_context($context);
     $PAGE->set_pagelayout('incourse');
@@ -33,7 +45,9 @@ try {
     if ($action === 'update' && confirm_sesskey()) {
         $newmessage = required_param('message', PARAM_RAW);
         $pending->message = $newmessage;
+        $pending->timemodified = time();
         $DB->update_record('local_forum_ai_pending', $pending);
+
         redirect(new moodle_url('/local/forum_ai/review.php', ['token' => $token]),
             'Mensaje de la IA actualizado correctamente',
             null,
@@ -71,11 +85,11 @@ try {
 
     // Post original
     echo '<div class="card mb-3">';
-    echo '<div class="card-header"><h5><i class="fa fa-comment"></i> Tu mensaje original</h5></div>';
+    echo '<div class="card-header"><h5><i class="fa fa-comment"></i> Mensaje original</h5></div>';
     echo '<div class="card-body">';
     echo '<h6>' . format_string($original_post->subject) . '</h6>';
     echo format_text($original_post->message, $original_post->messageformat);
-    echo '<br><small class="text-muted">Por: ' . fullname($USER) . ' el ' . userdate($original_post->created) . '</small>';
+    echo '<br><small class="text-muted">Por: ' . fullname($author) . ' el ' . userdate($original_post->created) . '</small>';
     echo '</div>';
     echo '</div>';
 
@@ -102,7 +116,7 @@ try {
     echo '<input type="hidden" name="action" value="update">';
     echo '<input type="hidden" name="sesskey" value="' . sesskey() . '">';
     echo '<textarea name="message" class="form-control" rows="6">' . s($pending->message) . '</textarea>';
-    echo '<button type="submit" class="btn btn-success btn-sm mt-2"><i class="fa fa-save"></i> Guardar</button>';
+    echo '<button type="submit" class="btn btn-success btn-sm mt-2"><i class="fa fa-save"></i> Guardar</button> ';
     echo '<button type="button" id="cancel-edit" class="btn btn-secondary btn-sm mt-2">Cancelar</button>';
     echo '</form>';
 
