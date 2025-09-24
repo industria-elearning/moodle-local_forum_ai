@@ -1,4 +1,31 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Approve/reject AI-generated responses in forum discussions.
+ *
+ * Handles requests to approve or reject a pending AI-generated
+ * forum reply, updating the database and redirecting back to the
+ * forum discussion with a status notification.
+ *
+ * @package    local_forum_ai
+ * @copyright  2025 Piero Llanos <piero@datacurso.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/mod/forum/lib.php');
 
@@ -6,7 +33,7 @@ $token = required_param('token', PARAM_ALPHANUMEXT);
 $action = required_param('action', PARAM_ALPHA);
 
 require_login();
-require_sesskey(); // Seguridad adicional
+require_sesskey();
 
 try {
     $pending = $DB->get_record('local_forum_ai_pending',
@@ -30,26 +57,26 @@ try {
             $DB->update_record('local_forum_ai_pending', $pending);
 
             $message = 'La respuesta AI ha sido aprobada y publicada exitosamente.';
-            $notification_type = \core\output\notification::NOTIFY_SUCCESS;
+            $notificationtype = \core\output\notification::NOTIFY_SUCCESS;
         } else {
             $message = 'Error al publicar la respuesta. Inténtalo de nuevo.';
-            $notification_type = \core\output\notification::NOTIFY_ERROR;
+            $notificationtype = \core\output\notification::NOTIFY_ERROR;
         }
 
-    } elseif ($action === 'reject') {
+    } else if ($action === 'reject') {
         $pending->status = 'rejected';
         $pending->timemodified = time();
         $DB->update_record('local_forum_ai_pending', $pending);
 
         $message = 'La respuesta AI ha sido rechazada.';
-        $notification_type = \core\output\notification::NOTIFY_INFO;
+        $notificationtype = \core\output\notification::NOTIFY_INFO;
     } else {
         throw new moodle_exception('invalidaction', 'error');
     }
 
-    $forum_url = new moodle_url('/mod/forum/discuss.php', ['d' => $discussion->id]);
-    redirect($forum_url, $message, null, $notification_type);
+    $forumurl = new moodle_url('/mod/forum/discuss.php', ['d' => $discussion->id]);
+    redirect($forumurl, $message, null, $notificationtype);
 
 } catch (Exception $e) {
-    print_error('error', 'local_forum_ai', '', $e->getMessage());
+    throw new moodle_exception('error', 'local_forum_ai', '', $e->getMessage());
 }

@@ -7,7 +7,7 @@
 export function renderPost(post) {
     // Calcular la indentación basada en el nivel
     const indentationLevel = post.level;
-    const marginLeft = indentationLevel * 30; // 30px por cada nivel
+    const marginLeft = indentationLevel * 30;
 
     // Diferentes estilos de borde para diferentes niveles
     let borderClass = 'border-left-primary';

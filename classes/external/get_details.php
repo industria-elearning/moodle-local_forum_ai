@@ -1,4 +1,31 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Servicio externo para obtener detalles de una discusión con respuesta AI.
+ *
+ * Define la función webservice `local_forum_ai_get_details`
+ * que devuelve curso, foro, discusión, posts y estado de la respuesta AI.
+ *
+ * @package    local_forum_ai
+ * @category   external
+ * @copyright  2025 Piero Llanos <piero@datacurso.com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace local_forum_ai\external;
 
 defined('MOODLE_INTERNAL') || die();
@@ -13,14 +40,29 @@ use external_multiple_structure;
 use context_module;
 use moodle_exception;
 
+/**
+ * External API class to get details of AI responses in forum discussions.
+ */
 class get_details extends external_api {
 
+    /**
+     * Define los parámetros de entrada de la función webservice.
+     *
+     * @return external_function_parameters
+     */
     public static function execute_parameters() {
         return new external_function_parameters([
-            'token' => new external_value(PARAM_ALPHANUMEXT, 'Token de aprobación')
+            'token' => new external_value(PARAM_ALPHANUMEXT, 'Token de aprobación'),
         ]);
     }
 
+    /**
+     * Ejecuta la obtención de detalles de discusión y respuesta AI.
+     *
+     * @param string $token Token de aprobación
+     * @return array Datos del curso, foro, discusión y posts
+     * @throws moodle_exception Si no se encuentra el registro o falta permiso
+     */
     public static function execute($token) {
         global $DB;
 
@@ -43,7 +85,7 @@ class get_details extends external_api {
             'course' => format_string($course->fullname),
             'forum' => format_string($forum->name),
             'discussion' => format_string($discussion->name),
-            'posts' => self::build_hierarchical_posts($posts),
+            'posts' => self::buildhierarchicalposts($posts),
             'airesponse' => format_text($pending->message, FORMAT_HTML),
             'token' => $pending->approval_token,
             'status' => $pending->status,
@@ -53,18 +95,21 @@ class get_details extends external_api {
     }
 
     /**
-     * Construye la estructura jerárquica de posts en orden correcto
+     * Construye la estructura jerárquica de posts en orden correcto.
+     *
+     * @param array $posts Lista de posts
+     * @return array Posts en estructura plana jerárquica
      */
-    private static function build_hierarchical_posts($posts) {
+    private static function buildhierarchicalposts($posts) {
         global $DB;
 
-        $posts_by_id = [];
+        $postsbyid = [];
         $hierarchical = [];
 
-        // Formatear todos los posts y indexarlos por ID
+        // Formatear todos los posts y indexarlos por ID.
         foreach ($posts as $post) {
             $user = $DB->get_record('user', ['id' => $post->userid], 'id,firstname,lastname');
-            $formatted_post = [
+            $formattedpost = [
                 'id' => $post->id,
                 'parent' => $post->parent,
                 'subject' => format_string($post->subject),
@@ -73,77 +118,86 @@ class get_details extends external_api {
                 'created' => userdate($post->created),
                 'created_timestamp' => $post->created,
                 'children' => [],
-                'level' => 0
+                'level' => 0,
             ];
-            $posts_by_id[$post->id] = $formatted_post;
+            $postsbyid[$post->id] = $formattedpost;
         }
 
-        // Construir la estructura jerárquica
-        foreach ($posts_by_id as &$post) {
+        // Construir la estructura jerárquica.
+        foreach ($postsbyid as &$post) {
             if ($post['parent'] == 0) {
-                // Es un post principal
+                // Es un post principal.
                 $hierarchical[] = &$post;
             } else {
-                // Es una respuesta, agregarlo a su padre
-                if (isset($posts_by_id[$post['parent']])) {
-                    $posts_by_id[$post['parent']]['children'][] = &$post;
+                // Es una respuesta, agregarlo a su padre.
+                if (isset($postsbyid[$post['parent']])) {
+                    $postsbyid[$post['parent']]['children'][] = &$post;
                 }
             }
         }
 
-        // Ordenar hijos por fecha de creación
-        self::sort_children_recursive($hierarchical);
+        // Ordenar hijos por fecha de creación.
+        self::sortchildrenrecursive($hierarchical);
 
-        // Convertir a estructura plana manteniendo el orden jerárquico
-        return self::flatten_hierarchical($hierarchical, 0);
+        // Convertir a estructura plana manteniendo el orden jerárquico.
+        return self::flattenhierarchical($hierarchical, 0);
     }
 
     /**
-     * Ordena recursivamente los hijos por fecha de creación
+     * Ordena recursivamente los hijos por fecha de creación.
+     *
+     * @param array $posts
      */
-    private static function sort_children_recursive(&$posts) {
+    private static function sortchildrenrecursive(&$posts) {
         foreach ($posts as &$post) {
             if (!empty($post['children'])) {
-                // Ordenar hijos por timestamp de creación
+                // Ordenar hijos por timestamp de creación.
                 usort($post['children'], function($a, $b) {
                     return $a['created_timestamp'] - $b['created_timestamp'];
                 });
 
-                // Recursivamente ordenar los hijos de los hijos
-                self::sort_children_recursive($post['children']);
+                // Recursivamente ordenar los hijos de los hijos.
+                self::sortchildrenrecursive($post['children']);
             }
         }
     }
 
     /**
-     * Convierte la estructura jerárquica a plana manteniendo el orden
+     * Convierte la estructura jerárquica a plana manteniendo el orden.
+     *
+     * @param array $posts
+     * @param int $level Nivel actual
+     * @return array Posts aplanados con niveles
      */
-    private static function flatten_hierarchical($posts, $level) {
+    private static function flattenhierarchical($posts, $level) {
         $result = [];
 
         foreach ($posts as $post) {
-            // Establecer el nivel
+            // Establecer el nivel.
             $post['level'] = $level;
 
-            // Guardar los hijos antes de eliminarlos
+            // Guardar los hijos antes de eliminarlos.
             $children = $post['children'];
             unset($post['children']);
 
-            // Agregar el post actual
+            // Agregar el post actual.
             $result[] = $post;
 
-            // Agregar los hijos recursivamente
+            // Agregar los hijos recursivamente.
             if (!empty($children)) {
-                $child_posts = self::flatten_hierarchical($children, $level + 1);
-                $result = array_merge($result, $child_posts);
+                $childposts = self::flattenhierarchical($children, $level + 1);
+                $result = array_merge($result, $childposts);
             }
         }
 
         return $result;
     }
 
-
-
+    /**
+     * Define la estructura de retorno de la función webservice.
+     *
+     * @return external_single_structure
+     */
     public static function execute_returns() {
         return new external_single_structure([
             'course' => new external_value(PARAM_TEXT, 'Nombre del curso'),

@@ -23,8 +23,6 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Execute local_forum_ai upgrade from the given old version.
  *
@@ -37,12 +35,10 @@ function xmldb_local_forum_ai_upgrade($oldversion) {
     $dbman = $DB->get_manager();
 
     // For further information please read {@link https://docs.moodle.org/dev/Upgrade_API}.
-    //
     // You will also have to create the db/install.xml file by using the XMLDB Editor.
     // Documentation for the XMLDB Editor can be found at {@link https://docs.moodle.org/dev/XMLDB_editor}.
 
     if ($oldversion < 2025091611) {
-
         // Define table local_forum_ai_config to be created.
         $table = new xmldb_table('local_forum_ai_config');
 
@@ -60,9 +56,6 @@ function xmldb_local_forum_ai_upgrade($oldversion) {
         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
         $table->add_key('forumid_unique', XMLDB_KEY_UNIQUE, ['forumid']);
 
-        // Adding indexes to table local_forum_ai_config.
-        // $table->add_index('forumid_ix', XMLDB_INDEX_NOTUNIQUE, ['forumid']);
-
         // Conditionally launch create table for local_forum_ai_config.
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
@@ -73,7 +66,6 @@ function xmldb_local_forum_ai_upgrade($oldversion) {
     }
 
     if ($oldversion < 2025091611) {
-
         // Define table local_forum_ai_pending to be created.
         $table = new xmldb_table('local_forum_ai_pending');
 
@@ -104,7 +96,6 @@ function xmldb_local_forum_ai_upgrade($oldversion) {
         // Forum_ai savepoint reached.
         upgrade_plugin_savepoint(true, 2025091611, 'local', 'forum_ai');
     }
-
 
     return true;
 }

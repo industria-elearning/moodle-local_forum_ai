@@ -1,4 +1,28 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Página para revisar y aprobar o rechazar respuestas generadas por AI.
+ *
+ * @package    local_forum_ai
+ * @category   admin
+ * @copyright  2025 Piero Llanos
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->dirroot . '/mod/forum/lib.php');
 
@@ -15,9 +39,9 @@ try {
     $forum = $DB->get_record('forum', ['id' => $pending->forumid], '*', MUST_EXIST);
     $course = $DB->get_record('course', ['id' => $forum->course], '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
-    $original_post = $DB->get_record('forum_posts', ['id' => $discussion->firstpost], '*', MUST_EXIST);
-    $bot_user = $DB->get_record('user', ['id' => $pending->bot_userid], '*', MUST_EXIST);
-    $author = $DB->get_record('user', ['id' => $original_post->userid], '*', MUST_EXIST);
+    $originalpost = $DB->get_record('forum_posts', ['id' => $discussion->firstpost], '*', MUST_EXIST);
+    $botuser = $DB->get_record('user', ['id' => $pending->bot_userid], '*', MUST_EXIST);
+    $author = $DB->get_record('user', ['id' => $originalpost->userid], '*', MUST_EXIST);
 
     $context = context_course::instance($course->id);
 
@@ -40,8 +64,9 @@ try {
     $PAGE->set_pagelayout('incourse');
     $PAGE->set_title('Revisar respuesta AI');
     $PAGE->set_heading($course->fullname);
+    $PAGE->requires->js_call_amd('local_forum_ai/review', 'init');
 
-    // Guardar cambios si se actualizó el mensaje
+    // Guardar cambios si se actualizó el mensaje.
     if ($action === 'update' && confirm_sesskey()) {
         $newmessage = required_param('message', PARAM_RAW);
         $pending->message = $newmessage;
@@ -54,24 +79,24 @@ try {
             \core\output\notification::NOTIFY_SUCCESS);
     }
 
-    $approve_url = new moodle_url('/local/forum_ai/approve.php', [
+    $approveurl = new moodle_url('/local/forum_ai/approve.php', [
         'token' => $token,
         'action' => 'approve',
-        'sesskey' => sesskey()
+        'sesskey' => sesskey(),
     ]);
 
-    $reject_url = new moodle_url('/local/forum_ai/approve.php', [
+    $rejecturl = new moodle_url('/local/forum_ai/approve.php', [
         'token' => $token,
         'action' => 'reject',
-        'sesskey' => sesskey()
+        'sesskey' => sesskey(),
     ]);
 
-    $forum_url = new moodle_url('/mod/forum/discuss.php', ['d' => $discussion->id]);
+    $forumurl = new moodle_url('/mod/forum/discuss.php', ['d' => $discussion->id]);
 
     echo $OUTPUT->header();
     echo $OUTPUT->heading('Revisar respuesta AI');
 
-    // Info del debate
+    // Información del debate.
     echo '<div class="alert alert-info">';
     echo '<h5><i class="icon fa fa-info-circle"></i> Información del debate</h5>';
     echo '<p><strong>Curso:</strong> ' . format_string($course->fullname) . '</p>';
@@ -83,20 +108,20 @@ try {
     echo '<div class="row">';
     echo '<div class="col-md-6">';
 
-    // Post original
+    // Post original.
     echo '<div class="card mb-3">';
     echo '<div class="card-header"><h5><i class="fa fa-comment"></i> Mensaje original</h5></div>';
     echo '<div class="card-body">';
-    echo '<h6>' . format_string($original_post->subject) . '</h6>';
-    echo format_text($original_post->message, $original_post->messageformat);
-    echo '<br><small class="text-muted">Por: ' . fullname($author) . ' el ' . userdate($original_post->created) . '</small>';
+    echo '<h6>' . format_string($originalpost->subject) . '</h6>';
+    echo format_text($originalpost->message, $originalpost->messageformat);
+    echo '<br><small class="text-muted">Por: ' . fullname($author) . ' el ' . userdate($originalpost->created) . '</small>';
     echo '</div>';
     echo '</div>';
 
     echo '</div>';
     echo '<div class="col-md-6">';
 
-    // Respuesta AI con modo edición
+    // Respuesta AI con modo edición.
     echo '<div class="card mb-3">';
     echo '<div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">';
     echo '<h5 class="mb-0"><i class="fa fa-robot"></i> Respuesta AI propuesta</h5>';
@@ -104,14 +129,14 @@ try {
     echo '</div>';
     echo '<div class="card-body">';
 
-    // Vista normal
+    // Vista normal.
     echo '<div id="airesponse-view">';
     echo '<h6>' . format_string($pending->subject) . '</h6>';
     echo '<div class="card-text">' . format_text($pending->message, FORMAT_HTML) . '</div>';
-    echo '<small class="text-muted">Por: ' . fullname($bot_user) . ' (Bot AI)</small>';
+    echo '<small class="text-muted">Por: ' . fullname($botuser) . ' (Bot AI)</small>';
     echo '</div>';
 
-    // Vista edición (oculta por defecto)
+    // Vista edición (oculta por defecto).
     echo '<form id="airesponse-edit" method="post" action="' . $PAGE->url . '" style="display:none;">';
     echo '<input type="hidden" name="action" value="update">';
     echo '<input type="hidden" name="sesskey" value="' . sesskey() . '">';
@@ -120,45 +145,20 @@ try {
     echo '<button type="button" id="cancel-edit" class="btn btn-secondary btn-sm mt-2">Cancelar</button>';
     echo '</form>';
 
-    echo '</div></div>'; // card-body y card
-    echo '</div></div>'; // col y row
+    echo '</div></div>'; // Card-body y card.
+    echo '</div></div>'; // Col y row.
 
-    // Botones aprobar/rechazar
+    // Botones aprobar o rechazar.
     echo '<div class="row mt-4"><div class="col text-center">';
-    echo '<a href="' . $approve_url . '" class="btn btn-success btn-lg"><i class="fa fa-check"></i> Aprobar</a> ';
-    echo '<a href="' . $reject_url . '" class="btn btn-danger btn-lg ml-2"><i class="fa fa-times"></i> Rechazar</a>';
+    echo '<a href="' . $approveurl . '" class="btn btn-success btn-lg"><i class="fa fa-check"></i> Aprobar</a> ';
+    echo '<a href="' . $rejecturl . '" class="btn btn-danger btn-lg ml-2"><i class="fa fa-times"></i> Rechazar</a>';
     echo '</div></div>';
 
     echo '<div class="row mt-3"><div class="col text-center">';
-    echo '<a href="' . $forum_url . '" class="btn btn-secondary"><i class="fa fa-arrow-left"></i> Volver al debate</a>';
+    echo '<a href="' . $forumurl . '" class="btn btn-secondary"><i class="fa fa-arrow-left"></i> Volver al debate</a>';
     echo '</div></div>';
 
     echo $OUTPUT->footer();
-
-    // JS inline para manejar edición
-    ?>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const editBtn = document.getElementById("edit-btn");
-    const viewDiv = document.getElementById("airesponse-view");
-    const editForm = document.getElementById("airesponse-edit");
-    const cancelBtn = document.getElementById("cancel-edit");
-
-    if (editBtn) {
-        editBtn.addEventListener("click", () => {
-            viewDiv.style.display = "none";
-            editForm.style.display = "block";
-        });
-    }
-    if (cancelBtn) {
-        cancelBtn.addEventListener("click", () => {
-            editForm.style.display = "none";
-            viewDiv.style.display = "block";
-        });
-    }
-});
-</script>
-<?php
 
 } catch (Exception $e) {
     throw new moodle_exception($e->getMessage(), 'local_forum_ai');

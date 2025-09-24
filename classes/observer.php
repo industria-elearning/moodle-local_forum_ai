@@ -1,71 +1,106 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Observadores de eventos para forum_ai.
+ *
+ * @package    local_forum_ai
+ * @category   event
+ * @copyright  2025 Piero Llanos
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace local_forum_ai;
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_forum\event\discussion_created;
-// use core\event\course_module_created;
 
+/**
+ * Clase observadora de eventos para forum_ai.
+ */
 class observer {
 
-     /**
+    /**
      * Maneja la creación de foros de tipo "single".
+     *
+     * @param \core\event\course_module_created $event
+     * @return bool
      */
-    public static function course_module_created(\core\event\course_module_created $event) {
-    global $DB;
+    public static function course_module_created(\core\event\course_module_created $event): bool {
+        global $DB;
 
-    try {
-        // Solo nos interesa si es un foro.
-        if ($event->other['modulename'] !== 'forum') {
-            return true;
-        }
-
-        $forumid = $event->other['instanceid'];
-        $forum = $DB->get_record('forum', ['id' => $forumid], '*', MUST_EXIST);
-
-        // Solo procesar si es de tipo "single".
-        if ($forum->type !== 'single') {
-            return true;
-        }
-
-        // Reintentar hasta encontrar la discusión inicial.
-        $max_attempts = 5;
-        $discussion = null;
-
-        for ($i = 0; $i < $max_attempts; $i++) {
-            $discussion = $DB->get_record('forum_discussions', ['forum' => $forum->id], '*', IGNORE_MULTIPLE);
-            if ($discussion) {
-                break;
+        try {
+            // Solo nos interesa si es un foro.
+            if ($event->other['modulename'] !== 'forum') {
+                return true;
             }
-            sleep(1); // esperar 1 segundo
-        }
 
-        if (!$discussion) {
-            error_log("forum_ai: No se encontró discusión inicial para foro tipo single ID {$forum->id}");
+            $forumid = $event->other['instanceid'];
+            $forum = $DB->get_record('forum', ['id' => $forumid], '*', MUST_EXIST);
+
+            // Solo procesar si es de tipo "single".
+            if ($forum->type !== 'single') {
+                return true;
+            }
+
+            // Reintentar hasta encontrar la discusión inicial.
+            $maxattempts = 5;
+            $discussion = null;
+
+            for ($i = 0; $i < $maxattempts; $i++) {
+                $discussion = $DB->get_record('forum_discussions', ['forum' => $forum->id], '*', IGNORE_MULTIPLE);
+                if ($discussion) {
+                    break;
+                }
+                sleep(1); // Esperar 1 segundo.
+            }
+
+            if (!$discussion) {
+                debugging(
+                    "forum_ai: No se encontró discusión inicial para foro tipo single ID {$forum->id}",
+                    DEBUG_DEVELOPER
+                );
+                return true;
+            }
+
+            // Simular evento discussion_created para reutilizar la lógica existente.
+            $fakeevent = \mod_forum\event\discussion_created::create([
+                'objectid'      => $discussion->id,
+                'context'       => $event->get_context(),
+                'courseid'      => $event->courseid,
+                'relateduserid' => $discussion->userid,
+                'other'         => ['forumid' => $forumid],
+            ]);
+
+            self::discussion_created($fakeevent);
+
             return true;
+
+        } catch (\Exception $e) {
+            debugging("forum_ai: Error en course_module_created: " . $e->getMessage(), DEBUG_DEVELOPER);
+            return false;
         }
-
-        // Simular evento discussion_created para reutilizar la lógica existente.
-        $fakeevent = \mod_forum\event\discussion_created::create([
-            'objectid'      => $discussion->id,
-            'context'       => $event->get_context(),
-            'courseid'      => $event->courseid,
-            'relateduserid' => $discussion->userid,
-            'other'         => ['forumid' => $forumid],
-        ]);
-
-        self::discussion_created($fakeevent);
-
-        return true;
-
-    } catch (\Exception $e) {
-        error_log("forum_ai: Error en course_module_created: " . $e->getMessage());
-        return false;
     }
-}
 
-
-    public static function discussion_created(discussion_created $event) {
+    /**
+     * Maneja la creación de discusiones.
+     *
+     * @param discussion_created $event
+     * @return bool
+     */
+    public static function discussion_created(discussion_created $event): bool {
         global $DB, $CFG, $USER;
 
         try {
@@ -77,227 +112,275 @@ class observer {
 
             if (!$config) {
                 $enabled = get_config('local_forum_ai', 'default_enabled');
-                $bot_userid = get_config('local_forum_ai', 'default_bot_userid');
-                $reply_message = get_config('local_forum_ai', 'default_reply_message');
-                $require_approval = 1;
+                $botuserid = get_config('local_forum_ai', 'default_bot_userid');
+                $replymessage = get_config('local_forum_ai', 'default_reply_message');
+                $requireapproval = 1;
             } else {
                 $enabled = $config->enabled;
-                $bot_userid = $config->bot_userid;
-                $reply_message = $config->reply_message;
-                $require_approval = $config->require_approval ?? 1;
+                $botuserid = $config->bot_userid;
+                $replymessage = $config->reply_message;
+                $requireapproval = $config->require_approval ?? 1;
             }
 
-            if (!$enabled || empty($bot_userid)) {
+            if (!$enabled || empty($botuserid)) {
                 return true;
             }
 
             $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid], '*', MUST_EXIST);
 
-            if ($discussion->userid == $bot_userid) {
+            if ($discussion->userid == $botuserid) {
                 return true;
             }
 
-            $original_post = $DB->get_record('forum_posts', ['id' => $discussion->firstpost]);
-            $ai_response = self::generate_ai_response($original_post, $reply_message, $config);
+            $originalpost = $DB->get_record('forum_posts', ['id' => $discussion->firstpost]);
+            $airesponse = self::generate_ai_response($originalpost, $replymessage, $config);
 
-            if ($require_approval) {
-                // Caso normal: pendiente de aprobación
-                self::create_approval_request($discussion, $bot_userid, $ai_response, 'pending');
+            if ($requireapproval) {
+                // Caso normal: pendiente de aprobación.
+                self::create_approval_request($discussion, $botuserid, $airesponse, 'pending');
             } else {
-                // Insertamos como aprobado y publicamos directamente
-                self::create_approval_request($discussion, $bot_userid, $ai_response, 'approved');
-                self::create_auto_reply($discussion, $bot_userid, $ai_response);
+                // Insertamos como aprobado y publicamos directamente.
+                self::create_approval_request($discussion, $botuserid, $airesponse, 'approved');
+                self::create_auto_reply($discussion, $botuserid, $airesponse);
             }
 
             return true;
 
         } catch (\Exception $e) {
-            error_log("forum_ai: Error en observer: " . $e->getMessage());
+            debugging("forum_ai: Error en observer: " . $e->getMessage(), DEBUG_DEVELOPER);
             return false;
         }
     }
 
     /**
-     * Crea solicitud de aprobación y envía notificación Moodle
+     * Crea solicitud de aprobación y envía notificación.
+     *
+     * @param object $discussion
+     * @param int $botuserid
+     * @param string $message
+     * @param string $status
+     * @return void
      */
-    private static function create_approval_request($discussion, $bot_userid, $message, $status = 'pending') {
-        global $DB, $CFG;
+    private static function create_approval_request(
+        $discussion,
+        int $botuserid,
+        string $message,
+        string $status = 'pending'
+    ): void {
+        global $DB;
 
         try {
-            $approval_token = hash('sha256', $discussion->id . time() . random_string(20));
+            $approvaltoken = hash('sha256', $discussion->id . time() . random_string(20));
 
             $pending = new \stdClass();
             $pending->discussionid = $discussion->id;
             $pending->forumid = $discussion->forum;
             $pending->creator_userid = $discussion->userid;
-            $pending->bot_userid = $bot_userid;
+            $pending->bot_userid = $botuserid;
             $pending->subject = "Re: " . $discussion->name;
             $pending->message = $message;
             $pending->status = $status;
-            $pending->approval_token = $approval_token;
+            $pending->approval_token = $approvaltoken;
             $pending->timecreated = time();
 
-            $pending_id = $DB->insert_record('local_forum_ai_pending', $pending);
+            $pendingid = $DB->insert_record('local_forum_ai_pending', $pending);
 
-            // Solo enviar notificación si está pendiente
+            // Solo enviar notificación si está pendiente.
             if ($status === 'pending') {
-                self::send_moodle_notification($discussion, $pending_id, $approval_token);
+                self::send_moodle_notification($discussion, $pendingid, $approvaltoken);
             }
 
-            error_log("forum_ai: Solicitud de aprobación creada con ID {$pending_id}");
+            debugging("forum_ai: Solicitud de aprobación creada con ID {$pendingid}", DEBUG_DEVELOPER);
 
         } catch (\Exception $e) {
-            error_log("forum_ai: Error al crear solicitud de aprobación: " . $e->getMessage());
+            debugging("forum_ai: Error al crear solicitud de aprobación: " . $e->getMessage(), DEBUG_DEVELOPER);
         }
     }
 
     /**
-     * Envía notificación usando el sistema nativo de Moodle
+     * Envía notificación usando el sistema nativo de Moodle.
+     *
+     * @param object $discussion
+     * @param int $pendingid
+     * @param string $approvaltoken
+     * @return bool
      */
-    private static function send_moodle_notification($discussion, $pending_id, $approval_token) {
-    global $DB, $CFG;
+    private static function send_moodle_notification(
+        $discussion,
+        int $pendingid,
+        string $approvaltoken
+    ): bool {
+        global $DB, $CFG;
 
-    try {
-        // Obtener datos necesarios
-        $creator = $DB->get_record('user', ['id' => $discussion->userid]);
-        $forum = $DB->get_record('forum', ['id' => $discussion->forum]);
-        $course = $DB->get_record('course', ['id' => $forum->course]);
-        $pending = $DB->get_record('local_forum_ai_pending', ['id' => $pending_id]);
+        try {
+            // Obtener datos necesarios.
+            $creator = $DB->get_record('user', ['id' => $discussion->userid]);
+            $forum = $DB->get_record('forum', ['id' => $discussion->forum]);
+            $course = $DB->get_record('course', ['id' => $forum->course]);
+            $pending = $DB->get_record('local_forum_ai_pending', ['id' => $pendingid]);
 
-        if (!$creator || !$forum || !$course || !$pending) {
-            throw new \Exception('Datos incompletos para notificación');
-        }
+            if (!$creator || !$forum || !$course || !$pending) {
+                throw new \Exception('Datos incompletos para notificación');
+            }
 
-        // Obtener el cmid del foro y el contexto del módulo
-        $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
-        $context = \context_module::instance($cm->id);
+            // Obtener el cmid del foro y el contexto del módulo.
+            $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
+            $context = \context_module::instance($cm->id);
 
-        // Buscar usuarios con capacidad
-        $recipients = get_users_by_capability($context, 'mod/forum:replypost');
+            // Buscar usuarios con capacidad.
+            $recipients = get_users_by_capability($context, 'mod/forum:replypost');
 
-        // Filtrar por roles permitidos
-        $allowedroles = ['manager', 'editingteacher', 'coursecreator'];
-        $finalrecipients = [];
+            // Filtrar por roles permitidos.
+            $allowedroles = ['manager', 'editingteacher', 'coursecreator'];
+            $finalrecipients = [];
 
-        foreach ($recipients as $recipient) {
-            $roles = get_user_roles($context, $recipient->id);
-            foreach ($roles as $role) {
-                if (in_array($role->shortname, $allowedroles)) {
-                    $finalrecipients[$recipient->id] = $recipient;
+            foreach ($recipients as $recipient) {
+                $roles = get_user_roles($context, $recipient->id);
+                foreach ($roles as $role) {
+                    if (in_array($role->shortname, $allowedroles)) {
+                        $finalrecipients[$recipient->id] = $recipient;
+                    }
                 }
             }
-        }
 
-        // URL para ver detalles y aprobar
-        $review_url = new \moodle_url('/local/forum_ai/review.php', [
-            'token' => $approval_token
-        ]);
+            // URL para ver detalles y aprobar.
+            $reviewurl = new \moodle_url('/local/forum_ai/review.php', [
+                'token' => $approvaltoken,
+            ]);
 
-        $approve_url = new \moodle_url('/local/forum_ai/approve.php', [
-            'token' => $approval_token,
-            'action' => 'approve'
-        ]);
+            $approveurl = new \moodle_url('/local/forum_ai/approve.php', [
+                'token' => $approvaltoken,
+                'action' => 'approve',
+            ]);
 
-        $reject_url = new \moodle_url('/local/forum_ai/approve.php', [
-            'token' => $approval_token,
-            'action' => 'reject'
-        ]);
+            $rejecturl = new \moodle_url('/local/forum_ai/approve.php', [
+                'token' => $approvaltoken,
+                'action' => 'reject',
+            ]);
 
-        // Mandar mensaje solo a los permitidos
-        foreach ($finalrecipients as $recipient) {
-            $message = new \core\message\message();
-            $message->component = 'local_forum_ai';
-            $message->name = 'ai_approval_request';
-            $message->userfrom = \core_user::get_noreply_user();
-            $message->userto = $recipient;
-            $message->subject = 'Aprobación requerida: Respuesta AI';
+            // Mandar mensaje solo a los permitidos.
+            foreach ($finalrecipients as $recipient) {
+                $message = new \core\message\message();
+                $message->component = 'local_forum_ai';
+                $message->name = 'ai_approval_request';
+                $message->userfrom = \core_user::get_noreply_user();
+                $message->userto = $recipient;
+                $message->subject = 'Aprobación requerida: Respuesta AI';
 
-            $message->fullmessage = "Hola {$recipient->firstname},\n\n"
-                . "Se ha generado una respuesta automática para el debate \"{$discussion->name}\" "
-                . "en el foro \"{$forum->name}\" del curso \"{$course->fullname}\".\n\n"
-                . "Vista previa: " . format_string(substr(strip_tags($pending->message), 0, 100)) . "...\n\n"
-                . "Revisa y aprueba la respuesta en: {$review_url}\n\n"
-                . "Aprobar directamente: {$approve_url}\n"
-                . "Rechazar: {$reject_url}";
+                $message->fullmessage = "Hola {$recipient->firstname},\n\n"
+                    . "Se ha generado una respuesta automática para el debate \"{$discussion->name}\" "
+                    . "en el foro \"{$forum->name}\" del curso \"{$course->fullname}\".\n\n"
+                    . "Vista previa: " . format_string(substr(strip_tags($pending->message), 0, 100)) . "...\n\n"
+                    . "Revisa y aprueba la respuesta en: {$reviewurl}\n\n"
+                    . "Aprobar directamente: {$approveurl}\n"
+                    . "Rechazar: {$rejecturl}";
 
-            $message->fullmessageformat = FORMAT_PLAIN;
+                $message->fullmessageformat = FORMAT_PLAIN;
 
-            $message->fullmessagehtml = "
-                <div style='font-family: Arial, sans-serif; max-width: 600px;'>
-                    <h3 style='color: #0f6cbf;'>🤖 Aprobación requerida: Respuesta AI</h3>
+                $message->fullmessagehtml = "
+                    <div style='font-family: Arial, sans-serif; max-width: 600px;'>
+                        <h3 style='color: #0f6cbf;'>🤖 Aprobación requerida: Respuesta AI</h3>
 
-                    <p><strong>Hola {$recipient->firstname},</strong></p>
+                        <p><strong>Hola {$recipient->firstname},</strong></p>
 
-                    <p>Se ha generado una respuesta automática para el debate
-                    <strong>\"{$discussion->name}\"</strong> en el foro
-                    <strong>\"{$forum->name}\"</strong>.</p>
+                        <p>Se ha generado una respuesta automática para el debate
+                        <strong>\"{$discussion->name}\"</strong> en el foro
+                        <strong>\"{$forum->name}\"</strong>.</p>
 
-                    <div style='background-color: #f8f9fa; padding: 15px; border-left: 4px solid #0f6cbf; margin: 15px 0;'>
-                        <h4 style='margin-top: 0;'>Vista previa:</h4>
-                        <div style='background: white; padding: 10px; border: 1px solid #ddd; border-radius: 4px;'>
-                            " . format_string(substr(strip_tags($pending->message), 0, 150)) . "...
+                        <div style='background-color: #f8f9fa; padding: 15px;
+                                    border-left: 4px solid #0f6cbf; margin: 15px 0;'>
+                            <h4 style='margin-top: 0;'>Vista previa:</h4>
+                            <div style='background: white; padding: 10px;
+                                        border: 1px solid #ddd; border-radius: 4px;'>
+                                " . format_string(substr(strip_tags($pending->message), 0, 150)) . "...
+                            </div>
                         </div>
+
+                        <div style='margin: 20px 0;'>
+                            <a href='{$reviewurl}'
+                               style='background-color: #0f6cbf; color: white;
+                                      padding: 12px 25px; text-decoration: none;
+                                      border-radius: 6px; display: inline-block;
+                                      margin-right: 10px;'>
+                                Ver completa y decidir
+                            </a>
+                        </div>
+
+                        <div style='margin: 15px 0;'>
+                            <a href='{$approveurl}'
+                               style='background-color: #28a745; color: white;
+                                      padding: 8px 15px; text-decoration: none;
+                                      border-radius: 4px; margin-right: 8px;
+                                      font-size: 0.9em;'>
+                                Aprobar
+                            </a>
+                            <a href='{$rejecturl}'
+                               style='background-color: #dc3545; color: white;
+                                      padding: 8px 15px; text-decoration: none;
+                                      border-radius: 4px; font-size: 0.9em;'>
+                                Rechazar
+                            </a>
+                        </div>
+
+                        <p style='color: #666; font-size: 0.9em;'>Curso: {$course->fullname}</p>
                     </div>
+                ";
 
-                    <div style='margin: 20px 0;'>
-                        <a href='{$review_url}' style='background-color: #0f6cbf; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; display: inline-block; margin-right: 10px;'>
-                            Ver completa y decidir
-                        </a>
-                    </div>
+                $message->smallmessage = "Nueva respuesta AI pendiente en \"{$discussion->name}\"";
+                $message->contexturl = $reviewurl;
+                $message->contexturlname = 'Revisar respuesta';
 
-                    <div style='margin: 15px 0;'>
-                        <a href='{$approve_url}' style='background-color: #28a745; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; margin-right: 8px; font-size: 0.9em;'>
-                            Aprobar
-                        </a>
-                        <a href='{$reject_url}' style='background-color: #dc3545; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; font-size: 0.9em;'>
-                            Rechazar
-                        </a>
-                    </div>
+                message_send($message);
+            }
 
-                    <p style='color: #666; font-size: 0.9em;'>Curso: {$course->fullname}</p>
-                </div>
-            ";
+            return true;
 
-            $message->smallmessage = "Nueva respuesta AI pendiente en \"{$discussion->name}\"";
-            $message->contexturl = $review_url;
-            $message->contexturlname = 'Revisar respuesta';
-
-            message_send($message);
+        } catch (\Exception $e) {
+            debugging("forum_ai: Error al enviar notificación Moodle: " . $e->getMessage(), DEBUG_DEVELOPER);
+            return false;
         }
-
-        return true;
-
-    } catch (\Exception $e) {
-        error_log("forum_ai: Error al enviar notificación Moodle: " . $e->getMessage());
-        return false;
     }
-}
 
-
-    private static function generate_ai_response($original_post, $base_message, $config = null) {
-        if (empty($base_message)) {
-            $base_message = "Gracias por tu participación. Un moderador revisará tu mensaje.";
+    /**
+     * Genera una respuesta AI simulada.
+     *
+     * @param object $originalpost
+     * @param string $basemessage
+     * @param object|null $config
+     * @return string
+     */
+    private static function generate_ai_response($originalpost, string $basemessage, $config = null): string {
+        if (empty($basemessage)) {
+            $basemessage = "Gracias por tu participación. Un moderador revisará tu mensaje.";
         }
 
-        $ai_responses = [
-            $base_message,
-            $base_message . " Tu pregunta es muy interesante y seguramente generará una buena discusión.",
-            $base_message . " ¡Excelente tema para debatir!",
-            $base_message . " Gracias por iniciar esta conversación, esperamos más participación.",
-            $base_message . " Tu aportación enriquece mucho este foro."
+        $airesponses = [
+            $basemessage,
+            $basemessage . " Tu pregunta es muy interesante y seguramente generará una buena discusión.",
+            $basemessage . " ¡Excelente tema para debatir!",
+            $basemessage . " Gracias por iniciar esta conversación, esperamos más participación.",
+            $basemessage . " Tu aportación enriquece mucho este foro.",
         ];
 
-        return $ai_responses[array_rand($ai_responses)];
+        return $airesponses[array_rand($airesponses)];
     }
 
-    public static function create_auto_reply($discussion, $bot_userid, $message) {
+    /**
+     * Crea la respuesta automática en el foro.
+     *
+     * @param object $discussion
+     * @param int $botuserid
+     * @param string $message
+     * @return bool
+     */
+    public static function create_auto_reply($discussion, int $botuserid, string $message): bool {
         global $DB, $CFG, $USER;
 
         try {
             $post = new \stdClass();
             $post->discussion = $discussion->id;
             $post->parent     = $discussion->firstpost;
-            $post->userid     = $bot_userid;
+            $post->userid     = $botuserid;
             $post->created    = time();
             $post->modified   = time();
             $post->subject    = "Re: " . $discussion->name;
@@ -307,7 +390,7 @@ class observer {
             $post->attachment = '';
 
             $realuser = $USER;
-            $USER = \core_user::get_user($bot_userid);
+            $USER = \core_user::get_user($botuserid);
 
             require_once($CFG->dirroot . '/mod/forum/lib.php');
             $postid = forum_add_new_post($post, null);
@@ -321,7 +404,7 @@ class observer {
                 global $USER;
                 $USER = $realuser;
             }
-            error_log("forum_ai: Error al crear respuesta automática: " . $e->getMessage());
+            debugging("forum_ai: Error al crear respuesta automática: " . $e->getMessage(), DEBUG_DEVELOPER);
             return false;
         }
     }
