@@ -25,4 +25,29 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['actions'] = 'Acciones';
+$string['approve'] = 'Aprobar';
+$string['bot_userid'] = 'ID Usuario Bot';
+$string['col_message'] = 'Mensaje';
+$string['coursename'] = 'Curso';
+$string['datacurso_custom'] = 'Datacurso Forum AI';
+$string['discussionmsg'] = 'Mensaje hecho por IA';
+$string['discussionname'] = 'Asunto';
+$string['enabled'] = 'Habilitar AI';
+$string['forumname'] = 'Foro';
+$string['historyresponses'] = 'Historial de respuestas AI';
+$string['nohistory'] = 'No hay historial de respuestas AI aprobadas o rechazadas.';
+$string['noresponses'] = 'No hay respuestas pendientes de aprobación.';
+$string['pendinglist'] = 'Respuestas AI pendientes';
+$string['pendingresponses'] = 'Respuestas AI pendientes';
 $string['pluginname'] = 'Forum AI';
+$string['preview'] = 'Mensaje IA';
+$string['reject'] = 'Rechazar';
+$string['reply_message'] = 'Dale indicaciones a la IA';
+$string['require_approval'] = 'Revisar respuesta IA';
+$string['status'] = 'Estado';
+$string['statusapproved'] = 'Aprobado';
+$string['statuspending'] = 'Pendiente';
+$string['statusrejected'] = 'Rechazado';
+$string['username'] = 'Creador';
+$string['viewdetails'] = 'Detalles';

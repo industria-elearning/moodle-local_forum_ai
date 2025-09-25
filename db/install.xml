@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XMLDB PATH="local/forum_ai/db" VERSION="20250922"
+    COMMENT="XMLDB file for Moodle local/forum_ai"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+    <TABLES>
+        <TABLE NAME="local_forum_ai_config" COMMENT="Forum-specific AI configuration">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+                <FIELD NAME="forumid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+                <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"
+                    SEQUENCE="false" />
+                <FIELD NAME="bot_userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" />
+                <FIELD NAME="reply_message" TYPE="text" NOTNULL="false" SEQUENCE="false" />
+                <FIELD NAME="ai_model" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" />
+                <FIELD NAME="require_approval" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1"
+                    SEQUENCE="false" COMMENT="1 = requiere aprobación, 0 = publicar directo" />
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+                <KEY NAME="forumid_unique" TYPE="unique" FIELDS="forumid" />
+            </KEYS>
+        </TABLE>
+
+        <TABLE NAME="local_forum_ai_pending" COMMENT="Pending AI responses awaiting approval">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" />
+                <FIELD NAME="discussionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+                <FIELD NAME="forumid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+                <FIELD NAME="creator_userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+                <FIELD NAME="bot_userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+                <FIELD NAME="subject" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
+                <FIELD NAME="message" TYPE="text" NOTNULL="true" SEQUENCE="false" />
+                <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="pending"
+                    SEQUENCE="false" />
+                <FIELD NAME="approval_token" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" />
+                <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
+                <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" />
+                <FIELD NAME="approved_at" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" />
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+                <KEY NAME="discussionid_fk" TYPE="foreign" FIELDS="discussionid"
+                    REFTABLE="forum_discussions" REFFIELDS="id" />
+                <KEY NAME="approval_token_unique" TYPE="unique" FIELDS="approval_token" />
+            </KEYS>
+        </TABLE>
+    </TABLES>
+</XMLDB>
