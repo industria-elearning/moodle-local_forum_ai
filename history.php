@@ -28,16 +28,36 @@ require_once(__DIR__ . '/../../config.php');
 
 require_login();
 
-$courseid = optional_param('courseid', 0, PARAM_INT);
+$courseid = required_param('courseid', PARAM_INT);
+$context = context_course::instance($courseid);
 
-$context = $courseid ? context_course::instance($courseid) : context_system::instance();
-require_capability('mod/forum:viewdiscussion', $context);
+$allowedroles = ['manager', 'editingteacher', 'coursecreator'];
 
-$PAGE->set_url('/local/forum_ai/history.php', ['courseid' => $courseid]);
+$hasrole = false;
+$userroles = get_user_roles($context, $USER->id, true);
+foreach ($userroles as $ur) {
+    $shortname = $DB->get_field('role', 'shortname', ['id' => $ur->roleid]);
+    if ($shortname && in_array($shortname, $allowedroles, true)) {
+        $hasrole = true;
+        break;
+    }
+}
+
+$PAGE->set_url(new moodle_url('/local/forum_ai/history.php', ['courseid' => $courseid]));
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('report');
 $PAGE->set_title(get_string('historyresponses', 'local_forum_ai'));
 $PAGE->set_heading(get_string('historyresponses', 'local_forum_ai'));
+
+if (!$hasrole) {
+    echo $OUTPUT->header();
+    echo $OUTPUT->notification(
+        'No tienes permisos para ver esta página. Solo gestores y profesores pueden acceder.',
+        \core\output\notification::NOTIFY_ERROR
+    );
+    echo $OUTPUT->footer();
+    exit;
+}
 
 global $DB;
 
