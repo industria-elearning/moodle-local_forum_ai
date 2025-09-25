@@ -154,8 +154,8 @@ function local_forum_ai_extend_navigation_course($navigation, $course, $context)
     global $PAGE;
 
     // URL de reportes del plugin.
-    $pendingurl = new moodle_url('/local/forum_ai/pending.php');
-    $historyurl = new moodle_url('/local/forum_ai/history.php');
+    $pendingurl = new moodle_url('/local/forum_ai/pending.php', ['courseid' => $course->id]);
+    $historyurl = new moodle_url('/local/forum_ai/history.php', ['courseid' => $course->id]);
 
     // Buscar nodo "Informes".
     $reportsnode = $navigation->find('coursereports', navigation_node::TYPE_CONTAINER);
