@@ -30,7 +30,47 @@ use mod_forum\event\discussion_created;
 /**
  * Clase observadora de eventos para forum_ai.
  */
-class observer {
+class observer
+{
+
+    /**
+     * Envía el payload al servicio externo de IA y devuelve el reply.
+     *
+     * @param array $payload
+     * @return string
+     * @throws moodle_exception
+     */
+    protected static function call_ai_service(array $payload)
+    {
+        global $CFG;
+
+        $endpoint = get_config('local_forum_ai', 'endpoint');
+        $token = get_config('local_forum_ai', 'token');
+
+        $curl = new \curl();
+        $options = [
+            'CURLOPT_RETURNTRANSFER' => true,
+            'CURLOPT_HTTPHEADER' => [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $token,
+            ],
+        ];
+
+        $response = $curl->post($endpoint, json_encode($payload), $options);
+
+        if ($response === false) {
+            throw new \moodle_exception('errorcallingai', 'local_forum_ai');
+        }
+
+        $data = json_decode($response, true);
+
+        if (!isset($data['reply'])) {
+            throw new \moodle_exception('invalidresponseai', 'local_forum_ai');
+        }
+
+        return $data['reply'];
+    }
+
 
     /**
      * Maneja la creación de foros de tipo "single".
@@ -38,7 +78,8 @@ class observer {
      * @param \core\event\course_module_created $event
      * @return bool
      */
-    public static function course_module_created(\core\event\course_module_created $event): bool {
+    public static function course_module_created(\core\event\course_module_created $event): bool
+    {
         global $DB;
 
         try {
@@ -55,7 +96,6 @@ class observer {
                 return true;
             }
 
-            // Reintentar hasta encontrar la discusión inicial.
             $maxattempts = 5;
             $discussion = null;
 
@@ -64,7 +104,7 @@ class observer {
                 if ($discussion) {
                     break;
                 }
-                sleep(1); // Esperar 1 segundo.
+                sleep(1);
             }
 
             if (!$discussion) {
@@ -75,16 +115,15 @@ class observer {
                 return true;
             }
 
-            // Simular evento discussion_created para reutilizar la lógica existente.
-            $fakeevent = \mod_forum\event\discussion_created::create([
-                'objectid'      => $discussion->id,
-                'context'       => $event->get_context(),
-                'courseid'      => $event->courseid,
+            $singleevent = \mod_forum\event\discussion_created::create([
+                'objectid' => $discussion->id,
+                'context' => $event->get_context(),
+                'courseid' => $event->courseid,
                 'relateduserid' => $discussion->userid,
-                'other'         => ['forumid' => $forumid],
+                'other' => ['forumid' => $forumid],
             ]);
 
-            self::discussion_created($fakeevent);
+            self::discussion_created($singleevent);
 
             return true;
 
@@ -100,8 +139,9 @@ class observer {
      * @param discussion_created $event
      * @return bool
      */
-    public static function discussion_created(discussion_created $event): bool {
-        global $DB, $CFG, $USER;
+    public static function discussion_created(discussion_created $event): bool
+    {
+        global $DB;
 
         try {
             $data = $event->get_data();
@@ -128,12 +168,28 @@ class observer {
 
             $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid], '*', MUST_EXIST);
 
+            // Evitar bucles infinitos (bot respondiéndose a sí mismo).
             if ($discussion->userid == $botuserid) {
                 return true;
             }
 
-            $originalpost = $DB->get_record('forum_posts', ['id' => $discussion->firstpost]);
-            $airesponse = self::generate_ai_response($originalpost, $replymessage, $config);
+            $post = $DB->get_record('forum_posts', ['id' => $discussion->firstpost], '*', MUST_EXIST);
+            $forum = $DB->get_record('forum', ['id' => $forumid], '*', MUST_EXIST);
+            $course = $DB->get_record('course', ['id' => $forum->course], '*', MUST_EXIST);
+
+            $payload = [
+                'course' => $course->fullname,
+                'forum' => $forum->name,
+                'discussion' => $discussion->name,
+                'userid' => $discussion->userid,
+                'post' => [
+                    'subject' => $post->subject,
+                    'message' => strip_tags($post->message),
+                ],
+                'prompt' => $replymessage,
+            ];
+
+            $airesponse = self::call_ai_service($payload);
 
             if ($requireapproval) {
                 // Caso normal: pendiente de aprobación.
@@ -147,7 +203,7 @@ class observer {
             return true;
 
         } catch (\Exception $e) {
-            debugging("forum_ai: Error en observer: " . $e->getMessage(), DEBUG_DEVELOPER);
+            debugging("forum_ai: Error en observer discussion_created: " . $e->getMessage(), DEBUG_DEVELOPER);
             return false;
         }
     }
@@ -342,30 +398,6 @@ class observer {
     }
 
     /**
-     * Genera una respuesta AI simulada.
-     *
-     * @param object $originalpost
-     * @param string $basemessage
-     * @param object|null $config
-     * @return string
-     */
-    private static function generate_ai_response($originalpost, string $basemessage, $config = null): string {
-        if (empty($basemessage)) {
-            $basemessage = "Gracias por tu participación. Un moderador revisará tu mensaje.";
-        }
-
-        $airesponses = [
-            $basemessage,
-            $basemessage . " Tu pregunta es muy interesante y seguramente generará una buena discusión.",
-            $basemessage . " ¡Excelente tema para debatir!",
-            $basemessage . " Gracias por iniciar esta conversación, esperamos más participación.",
-            $basemessage . " Tu aportación enriquece mucho este foro.",
-        ];
-
-        return $airesponses[array_rand($airesponses)];
-    }
-
-    /**
      * Crea la respuesta automática en el foro.
      *
      * @param object $discussion
@@ -373,18 +405,19 @@ class observer {
      * @param string $message
      * @return bool
      */
-    public static function create_auto_reply($discussion, int $botuserid, string $message): bool {
+    public static function create_auto_reply($discussion, int $botuserid, string $message): bool
+    {
         global $DB, $CFG, $USER;
 
         try {
             $post = new \stdClass();
             $post->discussion = $discussion->id;
-            $post->parent     = $discussion->firstpost;
-            $post->userid     = $botuserid;
-            $post->created    = time();
-            $post->modified   = time();
-            $post->subject    = "Re: " . $discussion->name;
-            $post->message    = format_text($message, FORMAT_HTML);
+            $post->parent = $discussion->firstpost;
+            $post->userid = $botuserid;
+            $post->created = time();
+            $post->modified = time();
+            $post->subject = "Re: " . $discussion->name;
+            $post->message = format_text($message, FORMAT_HTML);
             $post->messageformat = FORMAT_HTML;
             $post->messagetrust = 1;
             $post->attachment = '';

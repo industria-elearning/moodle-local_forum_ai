@@ -26,9 +26,24 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
-    $ADMIN->add('localplugins', new admin_externalpage(
-        'local_forum_ai_pending',
-        get_string('pendinglist', 'local_forum_ai'),
-        new moodle_url('/local/forum_ai/pending.php')
+    $settings = new admin_settingpage('local_forum_ai', get_string('pluginname', 'local_forum_ai'));
+
+    // Endpoint IA.
+    $settings->add(new admin_setting_configtext(
+        'local_forum_ai/endpoint',
+        get_string('endpoint', 'local_forum_ai'),
+        get_string('endpoint_desc', 'local_forum_ai'),
+        'https://plugins-ai-dev.datacurso.com/forum/chat',
+        PARAM_URL
     ));
+
+    // Token IA (se guarda enmascarado).
+    $settings->add(new admin_setting_configpasswordunmask(
+        'local_forum_ai/token',
+        get_string('apitoken', 'local_forum_ai'),
+        get_string('apitoken_desc', 'local_forum_ai'),
+        ''
+    ));
+
+    $ADMIN->add('localplugins', $settings);
 }
