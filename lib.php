@@ -73,12 +73,32 @@ function local_forum_ai_extend_settings_navigation(settings_navigation $nav, con
  * @param MoodleQuickForm $mform
  */
 function local_forum_ai_coursemodule_standard_elements($formwrapper, $mform) {
+    global $DB;
+
     // Solo aplicamos a foros.
     if ($formwrapper->get_current()->modulename !== 'forum') {
         return;
     }
 
-    // Nueva sección (collapsible) "Datacurso Custom".
+    $cm = $formwrapper->get_current();
+    $forumid = $cm->instance ?? null;
+
+    // Valores por defecto.
+    $defaults = (object)[
+        'enabled' => 0,
+        'require_approval' => 1,
+        'reply_message' => get_string('default_reply_message', 'local_forum_ai'),
+    ];
+
+    // Si ya hay configuración guardada en nuestra tabla, la usamos.
+    if ($forumid && $DB->record_exists('local_forum_ai_config', ['forumid' => $forumid])) {
+        $record = $DB->get_record('local_forum_ai_config', ['forumid' => $forumid]);
+        $defaults->enabled = $record->enabled;
+        $defaults->require_approval = $record->require_approval;
+        $defaults->reply_message = $record->reply_message;
+    }
+
+    // Nueva sección.
     $mform->addElement('header', 'local_forum_ai_header', get_string('datacurso_custom', 'local_forum_ai'));
 
     // Habilitar AI.
@@ -88,25 +108,22 @@ function local_forum_ai_coursemodule_standard_elements($formwrapper, $mform) {
             1 => get_string('yes'),
         ]
     );
-    $mform->setDefault('local_forum_ai_enabled', 0);
+    $mform->setDefault('local_forum_ai_enabled', $defaults->enabled);
 
-    // Revisar respuesta IA.
+    // Requiere aprobación.
     $mform->addElement('select', 'local_forum_ai_require_approval',
         get_string('require_approval', 'local_forum_ai'), [
             1 => get_string('yes'),
             0 => get_string('no'),
         ]
     );
-    $mform->setDefault('local_forum_ai_require_approval', 1);
-
-    // Usuario Bot.
-    $mform->addElement('text', 'local_forum_ai_bot_userid', get_string('bot_userid', 'local_forum_ai'));
-    $mform->setType('local_forum_ai_bot_userid', PARAM_INT);
+    $mform->setDefault('local_forum_ai_require_approval', $defaults->require_approval);
 
     // Mensaje base.
     $mform->addElement('textarea', 'local_forum_ai_reply_message',
         get_string('reply_message', 'local_forum_ai'), 'wrap="virtual" rows="3" cols="50"');
     $mform->setType('local_forum_ai_reply_message', PARAM_TEXT);
+    $mform->setDefault('local_forum_ai_reply_message', $defaults->reply_message);
 }
 
 /**
@@ -127,9 +144,7 @@ function local_forum_ai_coursemodule_edit_post_actions($data, $course) {
     $config = new stdClass();
     $config->forumid = $data->instance;
     $config->enabled = $data->local_forum_ai_enabled ?? 0;
-    $config->bot_userid = $data->local_forum_ai_bot_userid ?? null;
     $config->reply_message = $data->local_forum_ai_reply_message ?? '';
-    $config->ai_model = $data->local_forum_ai_ai_model ?? 'gpt-3.5';
     $config->timemodified = time();
 
     if ($record) {

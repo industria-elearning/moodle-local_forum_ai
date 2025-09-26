@@ -51,8 +51,3 @@ $string['statuspending'] = 'Pendiente';
 $string['statusrejected'] = 'Rechazado';
 $string['username'] = 'Creador';
 $string['viewdetails'] = 'Detalles';
-
-$string['endpoint'] = 'Endpoint del servicio IA';
-$string['endpoint_desc'] = 'URL al servicio de inteligencia artificial que responderá los debates.';
-$string['apitoken'] = 'Token de acceso';
-$string['apitoken_desc'] = 'Token Bearer para autenticar las llamadas al servicio de IA.';

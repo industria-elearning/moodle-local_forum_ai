@@ -68,9 +68,7 @@ if (!$tableexists) {
 // Procesar formulario.
 if ($action === 'save' && confirm_sesskey()) {
     $enabled = optional_param('enabled', 0, PARAM_INT);
-    $botuserid = optional_param('bot_userid', null, PARAM_INT);
     $replymessage = optional_param('reply_message', '', PARAM_TEXT);
-    $aimodel = optional_param('ai_model', 'gpt-3.5', PARAM_TEXT);
     $requireapproval = optional_param('require_approval', 1, PARAM_INT);
 
     try {
@@ -80,9 +78,7 @@ if ($action === 'save' && confirm_sesskey()) {
         $record = new stdClass();
         $record->forumid = $forumid;
         $record->enabled = $enabled;
-        $record->bot_userid = empty($botuserid) ? null : $botuserid;
         $record->reply_message = $replymessage;
-        $record->ai_model = $aimodel;
         $record->require_approval = $requireapproval;
         $record->timemodified = time();
 
@@ -111,9 +107,7 @@ if ($action === 'save' && confirm_sesskey()) {
 // Obtener configuración actual con manejo de errores.
 $config = new stdClass();
 $config->enabled = 0;
-$config->bot_userid = '';
 $config->reply_message = 'Gracias por tu participación. Un moderador revisará tu mensaje.';
-$config->ai_model = 'gpt-3.5';
 $config->require_approval = 1;
 
 try {
@@ -151,12 +145,6 @@ echo '<select name="require_approval" id="require_approval" class="form-control"
 echo '<option value="1"' . ($config->require_approval == 1 ? ' selected' : '') . '>Sí</option>';
 echo '<option value="0"' . ($config->require_approval == 0 ? ' selected' : '') . '>No</option>';
 echo '</select>';
-echo '</div>';
-
-echo '<div class="form-group">';
-echo '<label for="bot_userid">ID Usuario Bot</label>';
-echo '<input type="number" name="bot_userid" id="bot_userid" value="' .
-    s($config->bot_userid) . '" class="form-control">';
 echo '</div>';
 
 echo '<div class="form-group">';

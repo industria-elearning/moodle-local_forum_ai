@@ -26,12 +26,12 @@
 namespace local_forum_ai;
 
 use mod_forum\event\discussion_created;
+use aiprovider_datacurso\httpclient\ai_services_api;
 
 /**
  * Clase observadora de eventos para forum_ai.
  */
-class observer
-{
+class observer {
 
     /**
      * Envía el payload al servicio externo de IA y devuelve el reply.
@@ -40,35 +40,11 @@ class observer
      * @return string
      * @throws moodle_exception
      */
-    protected static function call_ai_service(array $payload)
-    {
-        global $CFG;
+    protected static function call_ai_service(array $payload) {
+        $client = new ai_services_api();
+        $response = $client->request('POST', '/forum/chat', $payload);
 
-        $endpoint = get_config('local_forum_ai', 'endpoint');
-        $token = get_config('local_forum_ai', 'token');
-
-        $curl = new \curl();
-        $options = [
-            'CURLOPT_RETURNTRANSFER' => true,
-            'CURLOPT_HTTPHEADER' => [
-                'Content-Type: application/json',
-                'Authorization: Bearer ' . $token,
-            ],
-        ];
-
-        $response = $curl->post($endpoint, json_encode($payload), $options);
-
-        if ($response === false) {
-            throw new \moodle_exception('errorcallingai', 'local_forum_ai');
-        }
-
-        $data = json_decode($response, true);
-
-        if (!isset($data['reply'])) {
-            throw new \moodle_exception('invalidresponseai', 'local_forum_ai');
-        }
-
-        return $data['reply'];
+        return $response['reply'];
     }
 
 
@@ -78,12 +54,10 @@ class observer
      * @param \core\event\course_module_created $event
      * @return bool
      */
-    public static function course_module_created(\core\event\course_module_created $event): bool
-    {
+    public static function course_module_created(\core\event\course_module_created $event): bool {
         global $DB;
 
         try {
-            // Solo nos interesa si es un foro.
             if ($event->other['modulename'] !== 'forum') {
                 return true;
             }
@@ -91,14 +65,12 @@ class observer
             $forumid = $event->other['instanceid'];
             $forum = $DB->get_record('forum', ['id' => $forumid], '*', MUST_EXIST);
 
-            // Solo procesar si es de tipo "single".
             if ($forum->type !== 'single') {
                 return true;
             }
 
             $maxattempts = 5;
             $discussion = null;
-
             for ($i = 0; $i < $maxattempts; $i++) {
                 $discussion = $DB->get_record('forum_discussions', ['forum' => $forum->id], '*', IGNORE_MULTIPLE);
                 if ($discussion) {
@@ -108,10 +80,7 @@ class observer
             }
 
             if (!$discussion) {
-                debugging(
-                    "forum_ai: No se encontró discusión inicial para foro tipo single ID {$forum->id}",
-                    DEBUG_DEVELOPER
-                );
+                debugging("forum_ai: No se encontró discusión inicial para foro tipo single ID {$forum->id}", DEBUG_DEVELOPER);
                 return true;
             }
 
@@ -139,8 +108,7 @@ class observer
      * @param discussion_created $event
      * @return bool
      */
-    public static function discussion_created(discussion_created $event): bool
-    {
+    public static function discussion_created(discussion_created $event): bool {
         global $DB;
 
         try {
@@ -150,29 +118,15 @@ class observer
 
             $config = $DB->get_record('local_forum_ai_config', ['forumid' => $forumid]);
 
-            if (!$config) {
-                $enabled = get_config('local_forum_ai', 'default_enabled');
-                $botuserid = get_config('local_forum_ai', 'default_bot_userid');
-                $replymessage = get_config('local_forum_ai', 'default_reply_message');
-                $requireapproval = 1;
-            } else {
-                $enabled = $config->enabled;
-                $botuserid = $config->bot_userid;
-                $replymessage = $config->reply_message;
-                $requireapproval = $config->require_approval ?? 1;
-            }
+            $enabled = $config->enabled ?? get_config('local_forum_ai', 'default_enabled');
+            $replymessage = $config->reply_message ?? get_config('local_forum_ai', 'default_reply_message');
+            $requireapproval = $config->require_approval ?? 1;
 
-            if (!$enabled || empty($botuserid)) {
+            if (!$enabled) {
                 return true;
             }
 
             $discussion = $DB->get_record('forum_discussions', ['id' => $discussionid], '*', MUST_EXIST);
-
-            // Evitar bucles infinitos (bot respondiéndose a sí mismo).
-            if ($discussion->userid == $botuserid) {
-                return true;
-            }
-
             $post = $DB->get_record('forum_posts', ['id' => $discussion->firstpost], '*', MUST_EXIST);
             $forum = $DB->get_record('forum', ['id' => $forumid], '*', MUST_EXIST);
             $course = $DB->get_record('course', ['id' => $forum->course], '*', MUST_EXIST);
@@ -192,12 +146,10 @@ class observer
             $airesponse = self::call_ai_service($payload);
 
             if ($requireapproval) {
-                // Caso normal: pendiente de aprobación.
-                self::create_approval_request($discussion, $botuserid, $airesponse, 'pending');
+                self::create_approval_request($discussion, $airesponse, 'pending');
             } else {
-                // Insertamos como aprobado y publicamos directamente.
-                self::create_approval_request($discussion, $botuserid, $airesponse, 'approved');
-                self::create_auto_reply($discussion, $botuserid, $airesponse);
+                self::create_approval_request($discussion, $airesponse, 'approved');
+                self::create_auto_reply($discussion, $airesponse);
             }
 
             return true;
@@ -212,17 +164,11 @@ class observer
      * Crea solicitud de aprobación y envía notificación.
      *
      * @param object $discussion
-     * @param int $botuserid
      * @param string $message
      * @param string $status
      * @return void
      */
-    private static function create_approval_request(
-        $discussion,
-        int $botuserid,
-        string $message,
-        string $status = 'pending'
-    ): void {
+    private static function create_approval_request($discussion, string $message, string $status = 'pending'): void {
         global $DB;
 
         try {
@@ -232,7 +178,6 @@ class observer
             $pending->discussionid = $discussion->id;
             $pending->forumid = $discussion->forum;
             $pending->creator_userid = $discussion->userid;
-            $pending->bot_userid = $botuserid;
             $pending->subject = "Re: " . $discussion->name;
             $pending->message = $message;
             $pending->status = $status;
@@ -241,12 +186,9 @@ class observer
 
             $pendingid = $DB->insert_record('local_forum_ai_pending', $pending);
 
-            // Solo enviar notificación si está pendiente.
             if ($status === 'pending') {
                 self::send_moodle_notification($discussion, $pendingid, $approvaltoken);
             }
-
-            debugging("forum_ai: Solicitud de aprobación creada con ID {$pendingid}", DEBUG_DEVELOPER);
 
         } catch (\Exception $e) {
             debugging("forum_ai: Error al crear solicitud de aprobación: " . $e->getMessage(), DEBUG_DEVELOPER);
@@ -261,11 +203,7 @@ class observer
      * @param string $approvaltoken
      * @return bool
      */
-    private static function send_moodle_notification(
-        $discussion,
-        int $pendingid,
-        string $approvaltoken
-    ): bool {
+    private static function send_moodle_notification($discussion, int $pendingid, string $approvaltoken): bool {
         global $DB, $CFG;
 
         try {
@@ -335,7 +273,7 @@ class observer
 
                 $message->fullmessagehtml = "
                     <div style='font-family: Arial, sans-serif; max-width: 600px;'>
-                        <h3 style='color: #0f6cbf;'>🤖 Aprobación requerida: Respuesta AI</h3>
+                        <h3 style='color: #0f6cbf;'>Aprobación requerida: Respuesta AI</h3>
 
                         <p><strong>Hola {$recipient->firstname},</strong></p>
 
@@ -361,24 +299,7 @@ class observer
                                 Ver completa y decidir
                             </a>
                         </div>
-
-                        <div style='margin: 15px 0;'>
-                            <a href='{$approveurl}'
-                               style='background-color: #28a745; color: white;
-                                      padding: 8px 15px; text-decoration: none;
-                                      border-radius: 4px; margin-right: 8px;
-                                      font-size: 0.9em;'>
-                                Aprobar
-                            </a>
-                            <a href='{$rejecturl}'
-                               style='background-color: #dc3545; color: white;
-                                      padding: 8px 15px; text-decoration: none;
-                                      border-radius: 4px; font-size: 0.9em;'>
-                                Rechazar
-                            </a>
-                        </div>
-
-                        <p style='color: #666; font-size: 0.9em;'>Curso: {$course->fullname}</p>
+                        <p style='color: #666; font-size: 0.9em;'><strong>Curso: {$course->fullname}</strong></p>
                     </div>
                 ";
 
@@ -405,39 +326,40 @@ class observer
      * @param string $message
      * @return bool
      */
-    public static function create_auto_reply($discussion, int $botuserid, string $message): bool
-    {
-        global $DB, $CFG, $USER;
+    public static function create_auto_reply($discussion, string $message): bool {
+        global $DB;
 
         try {
+            // Obtener el curso del debate.
+            $course = $DB->get_record('course', ['id' => $discussion->course], '*', MUST_EXIST);
+            $context = \context_course::instance($course->id);
+
+            // Obtener todos los usuarios matriculados con el rol "editingteacher".
+            $teachers = get_editingteachers($course->id);
+
+            if (empty($teachers)) {
+                debugging("forum_ai: No se encontró profesor para publicar respuesta", DEBUG_DEVELOPER);
+                return false;
+            }
+
+            // Usar al primer profesor encontrado.
+            $teacher = reset($teachers);
+
             $post = new \stdClass();
             $post->discussion = $discussion->id;
             $post->parent = $discussion->firstpost;
-            $post->userid = $botuserid;
+            $post->userid = $teacher->id;
             $post->created = time();
             $post->modified = time();
-            $post->subject = "Re: " . $discussion->name;
-            $post->message = format_text($message, FORMAT_HTML);
+            $post->subject = $post->subject ?: ("Re: " . $discussion->name);
+            $post->message = $message;
             $post->messageformat = FORMAT_HTML;
-            $post->messagetrust = 1;
-            $post->attachment = '';
 
-            $realuser = $USER;
-            $USER = \core_user::get_user($botuserid);
-
-            require_once($CFG->dirroot . '/mod/forum/lib.php');
-            $postid = forum_add_new_post($post, null);
-
-            $USER = $realuser;
-
-            return $postid ? true : false;
+            $DB->insert_record('forum_posts', $post);
+            return true;
 
         } catch (\Exception $e) {
-            if (isset($realuser)) {
-                global $USER;
-                $USER = $realuser;
-            }
-            debugging("forum_ai: Error al crear respuesta automática: " . $e->getMessage(), DEBUG_DEVELOPER);
+            debugging("forum_ai: Error en create_auto_reply: " . $e->getMessage(), DEBUG_DEVELOPER);
             return false;
         }
     }
