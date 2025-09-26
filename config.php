@@ -121,12 +121,11 @@ try {
     if ($existingconfig) {
         $config = $existingconfig;
         if (!isset($config->require_approval)) {
-            $config->require_approval = 1; // Valor por defecto si falta.
+            $config->require_approval = 1;
         }
     }
 } catch (Exception $e) {
     debugging('Error al obtener configuración: ' . $e->getMessage(), DEBUG_DEVELOPER);
-    // Usar valores por defecto si hay error.
 }
 
 echo $OUTPUT->header();

@@ -24,6 +24,7 @@
  */
 
 require_once(__DIR__ . '/../../config.php');
+require_once(__DIR__ . '/locallib.php');
 
 require_login();
 
@@ -60,20 +61,9 @@ if (!$hasrole) {
 
 global $DB;
 
-$sql = "SELECT p.*, d.name AS discussionname, f.name AS forumname,
-               c.fullname AS coursename, u.firstname, u.lastname,
-               fp.subject AS discussionsubject, fp.message AS discussionmessage, fp.messageformat
-          FROM {local_forum_ai_pending} p
-          JOIN {forum_discussions} d ON d.id = p.discussionid
-          JOIN {forum} f ON f.id = p.forumid
-          JOIN {course} c ON c.id = f.course
-          JOIN {user} u ON u.id = p.creator_userid
-          JOIN {forum_posts} fp ON fp.id = d.firstpost
-         WHERE p.status = :status
-      ORDER BY p.timecreated DESC";
+local_forum_ai_cleanup_pending();
 
-$params = ['status' => 'pending'];
-$pendings = $DB->get_records_sql($sql, $params);
+$pendings = local_forum_ai_get_pending($courseid);
 
 $templatecontext = [
 

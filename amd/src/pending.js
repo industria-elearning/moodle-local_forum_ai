@@ -19,19 +19,19 @@ export const init = () => {
                 ModalFactory.create({
                     type: ModalFactory.types.DEFAULT,
                     title: 'Detalles del debate',
-                    body: renderDiscussion(data),
+                    body: renderDiscussion(data, true),
                     large: true,
                 }).done(modal => {
                     modal.show();
 
-                    // Reasignar eventos para este modal
+                    // Inicializar handlers
                     initAiEditHandlers(modal.getRoot(), data.token);
                 });
             }).fail(Notification.exception);
         });
     });
 
-    // Botones de aprobar/rechazar
+    // Botones de aprobar/rechazar desde la tabla
     document.querySelectorAll('.action-btn').forEach(btn => {
         btn.addEventListener('click', e => {
             e.preventDefault();
@@ -54,16 +54,11 @@ export const init = () => {
 /**
  * Construye el HTML para el modal de detalles.
  *
- * @param {Object} data - Datos recibidos del servicio AJAX.
- * @param {string} data.course - Nombre del curso.
- * @param {string} data.forum - Nombre del foro.
- * @param {string} data.discussion - Título del debate.
- * @param {Array<Object>} data.posts - Lista de posts del debate.
- * @param {string} data.airesponse - Respuesta AI propuesta.
- * @param {string} data.token - Token único de aprobación asociado.
- * @returns {string} HTML a renderizar dentro del modal.
+ * @param {Object} data Datos recibidos del servicio AJAX.
+ * @param {boolean} editMode Si debe iniciar directamente en modo edición.
+ * @returns {string} HTML
  */
-function renderDiscussion(data) {
+function renderDiscussion(data, editMode = false) {
     let html = `<h4>${data.course} / ${data.forum}</h4>
                 <h5>Debate: ${data.discussion}</h5>`;
 
@@ -76,38 +71,41 @@ function renderDiscussion(data) {
     }
 
     html += `<div class="alert alert-primary mt-4">
-               <h5><i class="fa-solid fa-robot"></i> Respuesta AI propuesta
-                   <button class="btn btn-sm btn-link edit-ai" data-token="${data.token}">
-                     <i class="fa fa-pencil"></i>
-                   </button>
-               </h5>
-               <div id="airesponse-content" data-token="${data.token}">${data.airesponse}</div>
-             </div>`;
+               <h5><i class="fa-solid fa-robot"></i> Respuesta AI propuesta</h5>
+               <div id="airesponse-content" data-token="${data.token}">`;
+
+    if (editMode) {
+        // Mostrar directamente en modo edición
+        html += `
+            <textarea id="airesponse-edit" class="form-control" rows="5">${data.airesponse}</textarea>
+            <div class="mt-2">
+                <button class="btn btn-success btn-sm save-ai" data-token="${data.token}">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar
+                </button>
+                <button class="btn btn-primary btn-sm save-approve-ai" data-token="${data.token}">
+                    <i class="fa-solid fa-check"></i> Guardar y Aprobar
+                </button>
+                <button class="btn btn-danger btn-sm reject-ai" data-token="${data.token}">
+                    <i class="fa-solid fa-times"></i> Rechazar
+                </button>
+            </div>
+        `;
+    } else {
+        // Vista normal
+        html += data.airesponse;
+    }
+
+    html += `</div></div>`;
     return html;
 }
-
 
 /**
  * Inicializa los handlers para editar/guardar dentro de un modal específico.
  *
- * @param {object} root - El contenedor raíz del modal (jQuery-wrapped).
- * @param {string} token - El token único de aprobación asociado a la respuesta AI.
+ * @param {object} root El contenedor raíz del modal.
+ * @param {string} token Token único de aprobación asociado.
  */
 function initAiEditHandlers(root, token) {
-    // Editar mensaje
-    root.on('click', '.edit-ai', e => {
-        e.preventDefault();
-        const content = root.find('#airesponse-content');
-        const currentText = content.html().trim();
-
-        content.html(`
-            <textarea id="airesponse-edit" class="form-control" rows="5">${currentText}</textarea>
-            <button class="btn btn-success btn-sm mt-2 save-ai" data-token="${token}">
-              <i class="fa-solid fa-floppy-disk"></i> Guardar
-            </button>
-        `);
-    });
-
     // Guardar cambios
     root.on('click', '.save-ai', e => {
         e.preventDefault();
@@ -118,8 +116,36 @@ function initAiEditHandlers(root, token) {
             args: { token: token, message: newMessage },
         }])[0].done(response => {
             root.find('#airesponse-content').html(response.message);
+            location.reload();
+        }).fail(Notification.exception);
+    });
 
-            // Opcional: refrescar la tabla completa
+    // Guardar y aprobar
+    root.on('click', '.save-approve-ai', e => {
+        e.preventDefault();
+        const newMessage = root.find('#airesponse-edit').val();
+
+        Ajax.call([{
+            methodname: 'local_forum_ai_update_response',
+            args: { token: token, message: newMessage },
+        }])[0].done(() => {
+            Ajax.call([{
+                methodname: 'local_forum_ai_approve_response',
+                args: { token: token, action: 'approve' },
+            }])[0].done(() => {
+                location.reload();
+            }).fail(Notification.exception);
+        }).fail(Notification.exception);
+    });
+
+    // Rechazar
+    root.on('click', '.reject-ai', e => {
+        e.preventDefault();
+
+        Ajax.call([{
+            methodname: 'local_forum_ai_approve_response',
+            args: { token: token, action: 'reject' },
+        }])[0].done(() => {
             location.reload();
         }).fail(Notification.exception);
     });
