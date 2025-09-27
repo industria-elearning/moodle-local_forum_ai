@@ -322,7 +322,6 @@ class observer {
      * Crea la respuesta automática en el foro.
      *
      * @param object $discussion
-     * @param int $botuserid
      * @param string $message
      * @return bool
      */
