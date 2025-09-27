@@ -43,14 +43,14 @@ try {
         // Configuración de la página aunque no haya pending.
         $PAGE->set_url('/local/forum_ai/review.php', ['token' => $token]);
         $PAGE->set_pagelayout('incourse');
-        $PAGE->set_title('Revisar respuesta AI');
+        $PAGE->set_title(get_string('reviewtitle', 'local_forum_ai'));
         $PAGE->set_heading(get_string('pluginname', 'local_forum_ai'));
 
         echo $OUTPUT->header();
 
         // Mensaje bonito con Bootstrap.
         echo $OUTPUT->notification(
-            'Esta solicitud ya fue aprobada, rechazada o no existe.',
+            get_string('alreadysubmitted', 'local_forum_ai'),
             \core\output\notification::NOTIFY_INFO
         );
 
@@ -85,7 +85,7 @@ try {
     $PAGE->set_url('/local/forum_ai/review.php', ['token' => $token]);
     $PAGE->set_context($context);
     $PAGE->set_pagelayout('incourse');
-    $PAGE->set_title('Revisar respuesta AI');
+    $PAGE->set_title(get_string('reviewtitle', 'local_forum_ai'));
     $PAGE->set_heading($course->fullname);
     $PAGE->requires->js_call_amd('local_forum_ai/review', 'init');
 
@@ -107,6 +107,20 @@ try {
         'aiformatted' => s($pending->message),
         'token' => $token,
         'forumurl' => $forumurl->out(),
+
+        // Traducciones.
+        'strdiscussioninfo' => get_string('discussioninfo', 'local_forum_ai'),
+        'strcourse' => get_string('course', 'local_forum_ai'),
+        'strforum' => get_string('forum', 'local_forum_ai'),
+        'strdiscussion' => get_string('discussion', 'local_forum_ai'),
+        'strcreated' => get_string('created', 'local_forum_ai'),
+        'stroriginalmessage' => get_string('originalmessage', 'local_forum_ai'),
+        'straiproposed' => get_string('aiproposed', 'local_forum_ai'),
+        'strsave' => get_string('save', 'local_forum_ai'),
+        'strcancel' => get_string('cancel', 'local_forum_ai'),
+        'strapprove' => get_string('approve', 'local_forum_ai'),
+        'strreject' => get_string('reject', 'local_forum_ai'),
+        'strbacktodiscussion' => get_string('backtodiscussion', 'local_forum_ai'),
     ];
 
     echo $OUTPUT->header();

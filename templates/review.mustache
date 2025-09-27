@@ -15,27 +15,22 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_forum_ai
-
-    TODO describe template forum_ai
-
-    Example context (json):
-    {
-    }
+    @template local_forum_ai/review
+    Plantilla para revisar respuestas AI.
 }}
 
 <div class="alert alert-info">
-  <h5><i class="icon fa fa-info-circle"></i> Información del debate</h5>
-  <p><strong>Curso:</strong> {{course}}</p>
-  <p><strong>Foro:</strong> {{forum}}</p>
-  <p><strong>Debate:</strong> {{discussion}}</p>
-  <p><strong>Creado:</strong> {{timecreated}}</p>
+  <h5><i class="icon fa fa-info-circle"></i> {{strdiscussioninfo}}</h5>
+  <p><strong>{{strcourse}}:</strong> {{course}}</p>
+  <p><strong>{{strforum}}:</strong> {{forum}}</p>
+  <p><strong>{{strdiscussion}}:</strong> {{discussion}}</p>
+  <p><strong>{{strcreated}}:</strong> {{timecreated}}</p>
 </div>
 
 <div class="row">
   <div class="col-md-6">
     <div class="card mb-3">
-      <div class="card-header"><h5><i class="fa fa-comment"></i> Mensaje original</h5></div>
+      <div class="card-header"><h5><i class="fa fa-comment"></i> {{stroriginalmessage}}</h5></div>
       <div class="card-body">
         <h6>{{originalsubject}}</h6>
         {{{originalmessage}}}
@@ -48,7 +43,7 @@
   <div class="col-md-6">
     <div class="card mb-3">
       <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0"><i class="fa fa-robot"></i> Respuesta AI propuesta</h5>
+        <h5 class="mb-0"><i class="fa fa-robot"></i> {{straiproposed}}</h5>
         <button id="edit-btn" class="btn btn-sm btn-light"><i class="fa fa-pencil"></i></button>
       </div>
       <div class="card-body">
@@ -64,9 +59,9 @@
         <form id="airesponse-edit" method="post" data-token="{{token}}" style="display:none;">
           <textarea name="message" class="form-control" rows="6">{{aiformatted}}</textarea>
           <button type="submit" class="btn btn-success btn-sm mt-2">
-            <i class="fa fa-save"></i> Guardar
+            <i class="fa fa-save"></i> {{strsave}}
           </button>
-          <button type="button" id="cancel-edit" class="btn btn-secondary btn-sm mt-2">Cancelar</button>
+          <button type="button" id="cancel-edit" class="btn btn-secondary btn-sm mt-2">{{strcancel}}</button>
         </form>
 
       </div>
@@ -78,10 +73,10 @@
 <div class="row mt-4">
   <div class="col text-center">
     <button class="btn btn-success btn-lg action-btn" data-action="approve" data-token="{{token}}" data-discussionid="{{discussionid}}">
-      <i class="fa fa-check"></i> Aprobar
+      <i class="fa fa-check"></i> {{strapprove}}
     </button>
     <button class="btn btn-danger btn-lg ml-2 action-btn" data-action="reject" data-token="{{token}}" data-discussionid="{{discussionid}}">
-      <i class="fa fa-times"></i> Rechazar
+      <i class="fa fa-times"></i> {{strreject}}
     </button>
   </div>
 </div>
@@ -90,7 +85,8 @@
 <div class="row mt-3">
   <div class="col text-center">
     <a href="{{forumurl}}" class="btn btn-secondary">
-      <i class="fa fa-arrow-left"></i> Volver al debate
+      <i class="fa fa-arrow-left"></i> {{strbacktodiscussion}}
     </a>
   </div>
 </div>
+
