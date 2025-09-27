@@ -15,14 +15,37 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_forum_ai
+    @template local_forum_ai/history
 
-    TODO describe template forum_ai
+    Historial de respuestas AI revisadas.
 
     Example context (json):
     {
+      "heading": "Historial de respuestas",
+      "hashistory": true,
+      "responses": [
+        {
+          "coursename": "Matemáticas",
+          "forumname": "Foro AI",
+          "discussionname": "Discusión pasada",
+          "discussionmsg": "Mensaje de ejemplo",
+          "userfullname": "Alumno Dos",
+          "status": "Aprobado",
+          "token": "xyz789",
+          "viewdetails": "Ver detalles"
+        }
+      ],
+      "col_course": "Curso",
+      "col_forum": "Foro",
+      "col_discussion": "Discusión",
+      "col_message": "Mensaje",
+      "col_user": "Usuario",
+      "col_status": "Estado",
+      "col_actions": "Acciones",
+      "noresponses": "No hay historial"
     }
 }}
+
 
 <h2>{{heading}}</h2>
 
