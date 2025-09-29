@@ -25,6 +25,7 @@
 
 
 require_once(__DIR__ . '/../../config.php');
+require_once(__DIR__ . '/locallib.php');
 
 require_login();
 
@@ -61,17 +62,9 @@ if (!$hasrole) {
 
 global $DB;
 
-$sql = "SELECT p.*, d.name AS discussionname, f.name AS forumname, c.fullname AS coursename,
-               u.firstname, u.lastname
-          FROM {local_forum_ai_pending} p
-          JOIN {forum_discussions} d ON d.id = p.discussionid
-          JOIN {forum} f ON f.id = p.forumid
-          JOIN {course} c ON c.id = f.course
-          JOIN {user} u ON u.id = p.creator_userid
-         WHERE p.status IN ('approved', 'rejected')
-      ORDER BY p.timecreated DESC";
+local_forum_ai_cleanup_pending();
 
-$records = $DB->get_records_sql($sql);
+$records = local_forum_ai_get_history($courseid);
 
 $statusmap = [
     'approved' => get_string('statusapproved', 'local_forum_ai'),
@@ -79,7 +72,6 @@ $statusmap = [
     'pending'  => get_string('statuspending', 'local_forum_ai'),
 ];
 
-// Contexto para la plantilla.
 $templatecontext = [
     'col_course' => get_string('coursename', 'local_forum_ai'),
     'col_forum' => get_string('forumname', 'local_forum_ai'),

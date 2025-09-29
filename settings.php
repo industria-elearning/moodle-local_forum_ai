@@ -26,9 +26,10 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
-    $ADMIN->add('localplugins', new admin_externalpage(
-        'local_forum_ai_pending',
-        get_string('pendinglist', 'local_forum_ai'),
-        new moodle_url('/local/forum_ai/pending.php')
-    ));
+    $settings = new admin_settingpage('local_forum_ai', get_string('pluginname', 'local_forum_ai'));
+
+    // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
+    if ($ADMIN->fulltree) {
+        // TO-DO: Define actual plugin settings page and add it to the tree - {@link https://docs.moodle.org/dev/Admin_settings}.
+    }
 }

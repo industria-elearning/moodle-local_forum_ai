@@ -15,14 +15,39 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template local_forum_ai
+    @template local_forum_ai/pending
 
-    TODO describe template forum_ai
+    Lista de respuestas AI pendientes de revisión.
 
     Example context (json):
     {
+      "heading": "Respuestas pendientes",
+      "haspendings": true,
+      "pendings": [
+        {
+          "coursename": "Historia",
+          "forumname": "Foro de prueba",
+          "discussionname": "Discusión 1",
+          "discussionmsg": "Mensaje de prueba",
+          "userfullname": "Alumno Uno",
+          "preview": "Vista previa...",
+          "token": "abc123",
+          "approve": "Aprobar",
+          "reject": "Rechazar",
+          "viewdetails": "Ver detalles"
+        }
+      ],
+      "col_course": "Curso",
+      "col_forum": "Foro",
+      "col_discussion": "Discusión",
+      "col_message": "Mensaje",
+      "col_user": "Usuario",
+      "col_preview": "Vista previa",
+      "col_actions": "Acciones",
+      "noresponses": "No hay respuestas pendientes"
     }
 }}
+
 
 <h2>{{heading}}</h2>
 

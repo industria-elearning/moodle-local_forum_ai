@@ -68,9 +68,7 @@ if (!$tableexists) {
 // Procesar formulario.
 if ($action === 'save' && confirm_sesskey()) {
     $enabled = optional_param('enabled', 0, PARAM_INT);
-    $botuserid = optional_param('bot_userid', null, PARAM_INT);
     $replymessage = optional_param('reply_message', '', PARAM_TEXT);
-    $aimodel = optional_param('ai_model', 'gpt-3.5', PARAM_TEXT);
     $requireapproval = optional_param('require_approval', 1, PARAM_INT);
 
     try {
@@ -80,9 +78,7 @@ if ($action === 'save' && confirm_sesskey()) {
         $record = new stdClass();
         $record->forumid = $forumid;
         $record->enabled = $enabled;
-        $record->bot_userid = empty($botuserid) ? null : $botuserid;
         $record->reply_message = $replymessage;
-        $record->ai_model = $aimodel;
         $record->require_approval = $requireapproval;
         $record->timemodified = time();
 
@@ -111,9 +107,7 @@ if ($action === 'save' && confirm_sesskey()) {
 // Obtener configuración actual con manejo de errores.
 $config = new stdClass();
 $config->enabled = 0;
-$config->bot_userid = '';
 $config->reply_message = 'Gracias por tu participación. Un moderador revisará tu mensaje.';
-$config->ai_model = 'gpt-3.5';
 $config->require_approval = 1;
 
 try {
@@ -121,16 +115,15 @@ try {
     if ($existingconfig) {
         $config = $existingconfig;
         if (!isset($config->require_approval)) {
-            $config->require_approval = 1; // Valor por defecto si falta.
+            $config->require_approval = 1;
         }
     }
 } catch (Exception $e) {
     debugging('Error al obtener configuración: ' . $e->getMessage(), DEBUG_DEVELOPER);
-    // Usar valores por defecto si hay error.
 }
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading('Configuración Forum AI para: ' . format_string($forum->name));
+echo $OUTPUT->heading(get_string('settings', 'local_forum_ai')  . format_string($forum->name));
 
 // Resto del formulario.
 echo '<div class="container-fluid">';
@@ -139,37 +132,36 @@ echo '<input type="hidden" name="action" value="save">';
 echo '<input type="hidden" name="sesskey" value="' . sesskey() . '">';
 
 echo '<div class="form-group">';
-echo '<label for="enabled">Habilitar AI</label>';
+echo '<label for="enabled">'. get_string('enabled', 'local_forum_ai') .'</label>';
 echo '<select name="enabled" id="enabled" class="form-control">';
-echo '<option value="0"' . ($config->enabled == 0 ? ' selected' : '') . '>No</option>';
-echo '<option value="1"' . ($config->enabled == 1 ? ' selected' : '') . '>Sí</option>';
+echo '<option value="0"' . ($config->enabled == 0 ? ' selected' : '') . '>'. get_string('no', 'local_forum_ai') .'</option>';
+echo '<option value="1"' . ($config->enabled == 1 ? ' selected' : '') . '>'. get_string('yes', 'local_forum_ai') .'</option>';
 echo '</select>';
 echo '</div>';
 
 echo '<div class="form-group">';
-echo '<label for="require_approval">Revisar respuesta IA</label>';
+echo '<label for="require_approval">'. get_string('require_approval', 'local_forum_ai') .'</label>';
 echo '<select name="require_approval" id="require_approval" class="form-control">';
-echo '<option value="1"' . ($config->require_approval == 1 ? ' selected' : '') . '>Sí</option>';
-echo '<option value="0"' . ($config->require_approval == 0 ? ' selected' : '') . '>No</option>';
+echo '<option value="1"' .
+    ($config->require_approval == 1 ? ' selected' : '') .
+    '>' . get_string('yes', 'local_forum_ai') . '</option>';
+
+echo '<option value="0"' .
+    ($config->require_approval == 0 ? ' selected' : '') .
+    '>' . get_string('no', 'local_forum_ai') . '</option>';
 echo '</select>';
 echo '</div>';
 
 echo '<div class="form-group">';
-echo '<label for="bot_userid">ID Usuario Bot</label>';
-echo '<input type="number" name="bot_userid" id="bot_userid" value="' .
-    s($config->bot_userid) . '" class="form-control">';
-echo '</div>';
-
-echo '<div class="form-group">';
-echo '<label for="reply_message">Dale indicaciones a la IA</label>';
+echo '<label for="reply_message">'. get_string('reply_message', 'local_forum_ai') .'</label>';
 echo '<textarea name="reply_message" id="reply_message" rows="4" class="form-control">' .
     s($config->reply_message) . '</textarea>';
 echo '</div>';
 
 echo '<div class="form-group">';
-echo '<button type="submit" class="btn btn-primary">Guardar</button> ';
+echo '<button type="submit" class="btn btn-primary">'. get_string('save', 'local_forum_ai') .'</button> ';
 echo '<a href="' . new moodle_url('/mod/forum/view.php', ['id' => $cm->id]) .
-    '" class="btn btn-secondary">Cancelar</a>';
+    '" class="btn btn-secondary">'. get_string('cancel', 'local_forum_ai') .'</a>';
 echo '</div>';
 
 echo '</form>';

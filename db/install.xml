@@ -10,9 +10,7 @@
                 <FIELD NAME="forumid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
                 <FIELD NAME="enabled" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0"
                     SEQUENCE="false" />
-                <FIELD NAME="bot_userid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" />
                 <FIELD NAME="reply_message" TYPE="text" NOTNULL="false" SEQUENCE="false" />
-                <FIELD NAME="ai_model" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" />
                 <FIELD NAME="require_approval" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1"
                     SEQUENCE="false" COMMENT="1 = requiere aprobación, 0 = publicar directo" />
                 <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
@@ -30,7 +28,6 @@
                 <FIELD NAME="discussionid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
                 <FIELD NAME="forumid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
                 <FIELD NAME="creator_userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
-                <FIELD NAME="bot_userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" />
                 <FIELD NAME="subject" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" />
                 <FIELD NAME="message" TYPE="text" NOTNULL="true" SEQUENCE="false" />
                 <FIELD NAME="status" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="pending"
