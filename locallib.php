@@ -130,3 +130,39 @@ function get_editingteachers(int $courseid, bool $single = false) {
         return $DB->get_records_sql($sql, $params);
     }
 }
+
+/**
+ * Limpia respuestas AI pendientes de foros caducados.
+ *
+ * @return int Número de registros eliminados.
+ */
+function local_forum_ai_cleanup_expired(): int {
+    global $DB;
+
+    $now = time();
+
+    $sql = "SELECT p.id
+              FROM {local_forum_ai_pending} p
+              JOIN {forum} f ON f.id = p.forumid
+             WHERE p.status = 'pending'
+               AND (
+                   (f.cutoffdate > 0 AND f.cutoffdate < :now1)
+                   OR (f.cutoffdate = 0 AND f.duedate > 0 AND f.duedate < :now2)
+               )";
+
+    $params = [
+        'now1' => $now,
+        'now2' => $now,
+    ];
+
+    $pendings = $DB->get_records_sql($sql, $params);
+
+    if ($pendings) {
+        $ids = array_keys($pendings);
+        list($insql, $inparams) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
+        $DB->delete_records_select('local_forum_ai_pending', "id $insql", $inparams);
+        return count($ids);
+    }
+
+    return 0;
+}

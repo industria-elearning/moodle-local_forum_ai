@@ -63,6 +63,11 @@ global $DB;
 
 local_forum_ai_cleanup_pending();
 
+$removed = local_forum_ai_cleanup_expired();
+if ($removed > 0) {
+    debugging("Forum AI: Se eliminaron {$removed} respuestas caducadas.", DEBUG_DEVELOPER);
+}
+
 $pendings = local_forum_ai_get_pending($courseid);
 
 $templatecontext = [
