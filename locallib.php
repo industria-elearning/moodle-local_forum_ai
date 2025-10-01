@@ -45,9 +45,10 @@ function local_forum_ai_cleanup_pending() {
  *
  * @package local_forum_ai
  * @param int $courseid ID del curso.
+ * @param int $forumid (opcional) ID del foro para filtrar.
  * @return array lista de objetos con datos de pendientes.
  */
-function local_forum_ai_get_pending(int $courseid) {
+function local_forum_ai_get_pending(int $courseid, int $forumid = 0) {
     global $DB;
 
     $sql = "SELECT p.*, d.name AS discussionname, f.name AS forumname,
@@ -63,11 +64,23 @@ function local_forum_ai_get_pending(int $courseid) {
               JOIN {user} u ON u.id = p.creator_userid
               JOIN {forum_posts} fp ON fp.id = d.firstpost
              WHERE p.status = :status
-               AND cm.deletioninprogress = 0   -- Solo foros activos.
-               AND cm.visible = 1              -- Opcional: no mostrar foros ocultos.
-          ORDER BY p.timecreated DESC";
+               AND f.course = :courseid
+               AND cm.deletioninprogress = 0
+               AND cm.visible = 1";
 
-    return $DB->get_records_sql($sql, ['status' => 'pending', 'courseid' => $courseid]);
+    $params = [
+        'status' => 'pending',
+        'courseid' => $courseid,
+    ];
+
+    if ($forumid > 0) {
+        $sql .= " AND f.id = :forumid";
+        $params['forumid'] = $forumid;
+    }
+
+    $sql .= " ORDER BY p.timecreated DESC";
+
+    return $DB->get_records_sql($sql, $params);
 }
 
 /**
@@ -75,9 +88,10 @@ function local_forum_ai_get_pending(int $courseid) {
  *
  * @package local_forum_ai
  * @param int $courseid ID del curso.
+ * @param int $forumid (opcional) ID del foro para filtrar.
  * @return array lista de objetos de respuestas.
  */
-function local_forum_ai_get_history(int $courseid) {
+function local_forum_ai_get_history(int $courseid, int $forumid = 0) {
     global $DB;
 
     $sql = "SELECT p.*, d.name AS discussionname, f.name AS forumname, c.fullname AS coursename,
@@ -91,11 +105,20 @@ function local_forum_ai_get_history(int $courseid) {
               )
               JOIN {user} u ON u.id = p.creator_userid
              WHERE p.status IN ('approved', 'rejected')
-               AND cm.deletioninprogress = 0   -- Solo foros activos.
-               AND cm.visible = 1              -- Opcional: no mostrar foros ocultos.
-          ORDER BY p.timecreated DESC";
+               AND f.course = :courseid
+               AND cm.deletioninprogress = 0
+               AND cm.visible = 1";
 
-    return $DB->get_records_sql($sql);
+    $params = ['courseid' => $courseid];
+
+    if ($forumid > 0) {
+        $sql .= " AND f.id = :forumid";
+        $params['forumid'] = $forumid;
+    }
+
+    $sql .= " ORDER BY p.timecreated DESC";
+
+    return $DB->get_records_sql($sql, $params);
 }
 
 /**

@@ -49,7 +49,17 @@ function local_forum_ai_extend_settings_navigation(settings_navigation $nav, con
         return;
     }
 
-    // Buscar el nodo de configuraciones del módulo.
+    $forumid = $PAGE->cm->instance;
+
+    $urlpending = new moodle_url('/local/forum_ai/pending.php', [
+        'courseid' => $PAGE->course->id,
+        'forumid'  => $forumid,
+    ]);
+    $urlhistory = new moodle_url('/local/forum_ai/history.php', [
+        'courseid' => $PAGE->course->id,
+        'forumid'  => $forumid,
+    ]);
+
     $modulesettings = $nav->find('modulesettings', navigation_node::TYPE_SETTING);
 
     if ($modulesettings) {
@@ -62,6 +72,56 @@ function local_forum_ai_extend_settings_navigation(settings_navigation $nav, con
             null,
             'forum_ai_config',
             new pix_icon('i/settings', '')
+        );
+        $modulesettings->add(
+            get_string('pendingresponses', 'local_forum_ai'),
+            $urlpending,
+            navigation_node::TYPE_SETTING,
+            null,
+            'forum_ai_pending',
+            new pix_icon('i/warning', '')
+        );
+        $modulesettings->add(
+            get_string('historyresponses', 'local_forum_ai'),
+            $urlhistory,
+            navigation_node::TYPE_SETTING,
+            null,
+            'forum_ai_history',
+            new pix_icon('i/log', '')
+        );
+    }
+}
+
+/**
+ * Extiende el árbol de navegación con los ítems de forum_ai.
+ *
+ * @param navigation_node $navigation el árbol de navegación
+ * @param stdClass $course el curso
+ * @param stdClass $context el contexto
+ */
+function local_forum_ai_extend_navigation_course($navigation, $course, $context) {
+    global $USER;
+
+    if (has_capability('moodle/course:update', $context, $USER)) {
+        $pendingurl = new moodle_url('/local/forum_ai/pending.php', ['courseid' => $course->id]);
+        $historyurl = new moodle_url('/local/forum_ai/history.php', ['courseid' => $course->id]);
+
+        $navigation->add(
+            get_string('pendingresponses', 'local_forum_ai'),
+            $pendingurl,
+            navigation_node::TYPE_SETTING,
+            null,
+            'forum_ai_pending',
+            new pix_icon('i/warning', '')
+        );
+
+        $navigation->add(
+            get_string('historyresponses', 'local_forum_ai'),
+            $historyurl,
+            navigation_node::TYPE_SETTING,
+            null,
+            'forum_ai_history',
+            new pix_icon('i/log', '')
         );
     }
 }
@@ -156,65 +216,4 @@ function local_forum_ai_coursemodule_edit_post_actions($data, $course) {
     }
 
     return $data;
-}
-
-/**
- * Extiende la navegación de un curso para agregar enlace en Informes.
- *
- * @param navigation_node $navigation
- * @param stdClass $course
- * @param context_course $context
- */
-function local_forum_ai_extend_navigation_course($navigation, $course, $context) {
-    global $PAGE;
-
-    // URL de reportes del plugin.
-    $pendingurl = new moodle_url('/local/forum_ai/pending.php', ['courseid' => $course->id]);
-    $historyurl = new moodle_url('/local/forum_ai/history.php', ['courseid' => $course->id]);
-
-    // Buscar nodo "Informes".
-    $reportsnode = $navigation->find('coursereports', navigation_node::TYPE_CONTAINER);
-    if (!$reportsnode) {
-        $reportsnode = $navigation->find('courseadminreports', navigation_node::TYPE_CONTAINER);
-    }
-
-    if ($reportsnode) {
-        // Agregar enlaces dentro de Informes.
-        $reportsnode->add(
-            get_string('pendingresponses', 'local_forum_ai'),
-            $pendingurl,
-            navigation_node::TYPE_SETTING,
-            null,
-            'local_forum_ai_pending',
-            new pix_icon('i/report', '')
-        );
-
-        $reportsnode->add(
-            get_string('historyresponses', 'local_forum_ai'),
-            $historyurl,
-            navigation_node::TYPE_SETTING,
-            null,
-            'local_forum_ai_history',
-            new pix_icon('i/report', '')
-        );
-    } else {
-        // Si no existe "Informes", los agregamos en la raíz.
-        $navigation->add(
-            get_string('pendingresponses', 'local_forum_ai'),
-            $pendingurl,
-            navigation_node::TYPE_SETTING,
-            null,
-            'local_forum_ai_pending',
-            new pix_icon('i/report', '')
-        );
-
-        $navigation->add(
-            get_string('historyresponses', 'local_forum_ai'),
-            $historyurl,
-            navigation_node::TYPE_SETTING,
-            null,
-            'local_forum_ai_history',
-            new pix_icon('i/report', '')
-        );
-    }
 }
