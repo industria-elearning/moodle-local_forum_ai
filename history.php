@@ -23,13 +23,14 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/locallib.php');
 
 require_login();
 
 $courseid = required_param('courseid', PARAM_INT);
+$forumid  = optional_param('forumid', 0, PARAM_INT);
+
 $context = context_course::instance($courseid);
 
 $allowedroles = ['manager', 'editingteacher', 'coursecreator'];
@@ -44,7 +45,12 @@ foreach ($userroles as $ur) {
     }
 }
 
-$PAGE->set_url(new moodle_url('/local/forum_ai/history.php', ['courseid' => $courseid]));
+$params = ['courseid' => $courseid];
+if ($forumid) {
+    $params['forumid'] = $forumid;
+}
+
+$PAGE->set_url(new moodle_url('/local/forum_ai/history.php', $params));
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('report');
 $PAGE->set_title(get_string('historyresponses', 'local_forum_ai'));
@@ -64,7 +70,7 @@ global $DB;
 
 local_forum_ai_cleanup_pending();
 
-$records = local_forum_ai_get_history($courseid);
+$records = local_forum_ai_get_history($courseid, $forumid);
 
 $statusmap = [
     'approved' => get_string('statusapproved', 'local_forum_ai'),

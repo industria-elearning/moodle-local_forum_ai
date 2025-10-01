@@ -29,6 +29,8 @@ require_once(__DIR__ . '/locallib.php');
 require_login();
 
 $courseid = required_param('courseid', PARAM_INT);
+$forumid  = optional_param('forumid', 0, PARAM_INT);
+
 $context = context_course::instance($courseid);
 
 $allowedroles = ['manager', 'editingteacher', 'coursecreator'];
@@ -43,7 +45,12 @@ foreach ($userroles as $ur) {
     }
 }
 
-$PAGE->set_url(new moodle_url('/local/forum_ai/pending.php', ['courseid' => $courseid]));
+$params = ['courseid' => $courseid];
+if ($forumid) {
+    $params['forumid'] = $forumid;
+}
+
+$PAGE->set_url(new moodle_url('/local/forum_ai/pending.php', $params));
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('report');
 $PAGE->set_title(get_string('pendingresponses', 'local_forum_ai'));
@@ -61,17 +68,16 @@ if (!$hasrole) {
 
 global $DB;
 
+// Limpieza de caducados y eliminados.
 local_forum_ai_cleanup_pending();
-
 $removed = local_forum_ai_cleanup_expired();
 if ($removed > 0) {
     debugging("Forum AI: Se eliminaron {$removed} respuestas caducadas.", DEBUG_DEVELOPER);
 }
 
-$pendings = local_forum_ai_get_pending($courseid);
+$pendings = local_forum_ai_get_pending($courseid, $forumid);
 
 $templatecontext = [
-
     'col_course' => get_string('coursename', 'local_forum_ai'),
     'col_forum' => get_string('forumname', 'local_forum_ai'),
     'col_discussion' => get_string('discussionname', 'local_forum_ai'),
