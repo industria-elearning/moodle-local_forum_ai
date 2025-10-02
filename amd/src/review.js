@@ -66,7 +66,7 @@ export const init = () => {
         btn.addEventListener("click", e => {
             e.preventDefault();
 
-            const action = btn.dataset.action; // approve | reject
+            const action = btn.dataset.action;
             const token = btn.dataset.token;
 
             Ajax.call([{

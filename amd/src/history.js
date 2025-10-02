@@ -1,6 +1,7 @@
 import ModalFactory from 'core/modal_factory';
 import Ajax from 'core/ajax';
 import Notification from 'core/notification';
+import { get_string as getString } from 'core/str';
 import { renderPost } from './utils/renderPost';
 
 /**
@@ -14,11 +15,33 @@ export const init = () => {
             Ajax.call([{
                 methodname: 'local_forum_ai_get_details',
                 args: { token: token },
-            }])[0].done(data => {
+            }])[0].done(async data => {
+                const [
+                    modalTitle,
+                    discussionLabel,
+                    noPosts,
+                    aiResponse,
+                    aiResponseApproved,
+                    aiResponseRejected
+                ] = await Promise.all([
+                    getString('modal_title', 'local_forum_ai'),
+                    getString('discussion_label', 'local_forum_ai', data.discussion),
+                    getString('no_posts', 'local_forum_ai'),
+                    getString('ai_response', 'local_forum_ai'),
+                    getString('ai_response_approved', 'local_forum_ai'),
+                    getString('ai_response_rejected', 'local_forum_ai'),
+                ]);
+
                 ModalFactory.create({
                     type: ModalFactory.types.DEFAULT,
-                    title: 'Detalles del historial de debate',
-                    body: renderDiscussion(data),
+                    title: modalTitle,
+                    body: renderDiscussion(data, {
+                        discussionLabel,
+                        noPosts,
+                        aiResponse,
+                        aiResponseApproved,
+                        aiResponseRejected
+                    }),
                     large: true,
                 }).done(modal => {
                     modal.show();
@@ -32,29 +55,30 @@ export const init = () => {
  * Construye el HTML para el modal de historial.
  *
  * @param {Object} data Datos recibidos del servicio AJAX
- * @returns {string} HTML
+ * @param {Object} strings Cadenas traducidas
+ * @returns {Promise<string>} HTML
  */
-function renderDiscussion(data) {
+async function renderDiscussion(data, strings) {
     let html = `<h4>${data.course} / ${data.forum}</h4>
-                <h5>Debate: ${data.discussion}</h5>`;
+                <h5>${strings.discussionLabel}</h5>`;
 
     if (data.posts.length === 0) {
-        html += '<p class="text-warning">No se encontraron posts en este debate.</p>';
+        html += `<p class="text-warning">${strings.noPosts}</p>`;
     } else {
-        data.posts.forEach(post => {
-            html += renderPost(post);
-        });
+        for (const post of data.posts) {
+            html += await renderPost(post);
+        }
     }
 
-    // 🎨 Fondo según estado
     let statusClass = 'bg-secondary';
-    let statusLabel = '<i class="fa fa-robot mr-2"></i> Respuesta AI';
+    let statusLabel = `<i class="fa fa-robot mr-2"></i> ${strings.aiResponse}`;
+
     if (data.status === 'approved') {
         statusClass = 'bg-success text-white';
-        statusLabel = '<i class="fa fa-check mr-2"></i> Respuesta AI (Aprobada)';
+        statusLabel = `<i class="fa fa-check mr-2"></i> ${strings.aiResponseApproved}`;
     } else if (data.status === 'rejected') {
         statusClass = 'bg-danger text-white';
-        statusLabel = '<i class="fa fa-times mr-2"></i> Respuesta AI (Rechazada)';
+        statusLabel = `<i class="fa fa-times mr-2"></i> ${strings.aiResponseRejected}`;
     }
 
     html += `<div class="alert mt-4 ${statusClass}">
