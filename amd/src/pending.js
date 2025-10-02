@@ -2,6 +2,7 @@ import ModalFactory from 'core/modal_factory';
 import Ajax from 'core/ajax';
 import Notification from 'core/notification';
 import { renderPost } from './utils/renderPost';
+import { get_string as getString } from 'core/str';
 
 /**
  * Inicializa los listeners para mostrar detalles de respuestas AI.
@@ -15,16 +16,40 @@ export const init = () => {
             Ajax.call([{
                 methodname: 'local_forum_ai_get_details',
                 args: { token: token },
-            }])[0].done(data => {
+            }])[0].done(async data => {
+                // Precargar cadenas
+                const [
+                    modalTitle,
+                    discussionLabel,
+                    noPosts,
+                    aiResponseProposed,
+                    saveLabel,
+                    saveApproveLabel,
+                    rejectLabel
+                ] = await Promise.all([
+                    getString('modal_title_pending', 'local_forum_ai'),
+                    getString('discussion_label', 'local_forum_ai', data.discussion),
+                    getString('no_posts', 'local_forum_ai'),
+                    getString('ai_response_proposed', 'local_forum_ai'),
+                    getString('save', 'local_forum_ai'),
+                    getString('saveapprove', 'local_forum_ai'),
+                    getString('reject', 'local_forum_ai'),
+                ]);
+
                 ModalFactory.create({
                     type: ModalFactory.types.DEFAULT,
-                    title: 'Detalles del debate',
-                    body: renderDiscussion(data, true),
+                    title: modalTitle,
+                    body: renderDiscussion(data, true, {
+                        discussionLabel,
+                        noPosts,
+                        aiResponseProposed,
+                        saveLabel,
+                        saveApproveLabel,
+                        rejectLabel
+                    }),
                     large: true,
                 }).done(modal => {
                     modal.show();
-
-                    // Inicializar handlers
                     initAiEditHandlers(modal.getRoot(), data.token);
                 });
             }).fail(Notification.exception);
@@ -56,42 +81,47 @@ export const init = () => {
  *
  * @param {Object} data Datos recibidos del servicio AJAX.
  * @param {boolean} editMode Si debe iniciar directamente en modo edición.
- * @returns {string} HTML
+ * @param {Object} strings Conjunto de cadenas traducidas
+ * @param {string} strings.discussionLabel Texto para el título del debate
+ * @param {string} strings.noPosts Texto para cuando no hay posts
+ * @param {string} strings.aiResponseProposed Texto para la respuesta AI propuesta
+ * @param {string} strings.saveLabel Texto para el botón Guardar
+ * @param {string} strings.saveApproveLabel Texto para el botón Guardar y Aprobar
+ * @param {string} strings.rejectLabel Texto para el botón Rechazar
+ * @returns {Promise<string>} HTML generado
  */
-function renderDiscussion(data, editMode = false) {
+async function renderDiscussion(data, editMode = false, strings) {
     let html = `<h4>${data.course} / ${data.forum}</h4>
-                <h5>Debate: ${data.discussion}</h5>`;
+                <h5>${strings.discussionLabel}</h5>`;
 
     if (data.posts.length === 0) {
-        html += '<p class="text-warning">No se encontraron posts en este debate.</p>';
+        html += `<p class="text-warning">${strings.noPosts}</p>`;
     } else {
-        data.posts.forEach((post) => {
-            html += renderPost(post);
-        });
+        for (const post of data.posts) {
+            html += await renderPost(post);
+        }
     }
 
     html += `<div class="alert alert-primary mt-4">
-               <h5><i class="fa-solid fa-robot"></i> Respuesta AI propuesta</h5>
+               <h5><i class="fa-solid fa-robot"></i> ${strings.aiResponseProposed}</h5>
                <div id="airesponse-content" data-token="${data.token}">`;
 
     if (editMode) {
-        // Mostrar directamente en modo edición
         html += `
             <textarea id="airesponse-edit" class="form-control" rows="5">${data.airesponse}</textarea>
             <div class="mt-2">
                 <button class="btn btn-success btn-sm save-ai" data-token="${data.token}">
-                    <i class="fa-solid fa-floppy-disk"></i> Guardar
+                    <i class="fa-solid fa-floppy-disk"></i> ${strings.saveLabel}
                 </button>
                 <button class="btn btn-primary btn-sm save-approve-ai" data-token="${data.token}">
-                    <i class="fa-solid fa-check"></i> Guardar y Aprobar
+                    <i class="fa-solid fa-check"></i> ${strings.saveApproveLabel}
                 </button>
                 <button class="btn btn-danger btn-sm reject-ai" data-token="${data.token}">
-                    <i class="fa-solid fa-times"></i> Rechazar
+                    <i class="fa-solid fa-times"></i> ${strings.rejectLabel}
                 </button>
             </div>
         `;
     } else {
-        // Vista normal
         html += data.airesponse;
     }
 
@@ -106,7 +136,6 @@ function renderDiscussion(data, editMode = false) {
  * @param {string} token Token único de aprobación asociado.
  */
 function initAiEditHandlers(root, token) {
-    // Guardar cambios
     root.on('click', '.save-ai', e => {
         e.preventDefault();
         const newMessage = root.find('#airesponse-edit').val();
@@ -120,7 +149,6 @@ function initAiEditHandlers(root, token) {
         }).fail(Notification.exception);
     });
 
-    // Guardar y aprobar
     root.on('click', '.save-approve-ai', e => {
         e.preventDefault();
         const newMessage = root.find('#airesponse-edit').val();
@@ -138,7 +166,6 @@ function initAiEditHandlers(root, token) {
         }).fail(Notification.exception);
     });
 
-    // Rechazar
     root.on('click', '.reject-ai', e => {
         e.preventDefault();
 
