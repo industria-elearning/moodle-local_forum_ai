@@ -47,7 +47,6 @@ use moodle_exception;
  * aprobar o rechazar respuestas pendientes de aprobación mediante token.
  */
 class approve_response extends external_api {
-
     /**
      * Define los parámetros de entrada de la función externa.
      *
@@ -76,8 +75,12 @@ class approve_response extends external_api {
             'action' => $action,
         ]);
 
-        $pending = $DB->get_record('local_forum_ai_pending',
-            ['approval_token' => $params['token'], 'status' => 'pending'], '*', MUST_EXIST);
+        $pending = $DB->get_record(
+            'local_forum_ai_pending',
+            ['approval_token' => $params['token'], 'status' => 'pending'],
+            '*',
+            MUST_EXIST
+        );
 
         $discussion = $DB->get_record('forum_discussions', ['id' => $pending->discussionid], '*', MUST_EXIST);
         $forum      = $DB->get_record('forum', ['id' => $pending->forumid], '*', MUST_EXIST);
@@ -133,7 +136,6 @@ class approve_response extends external_api {
             $pending->approved_at  = time();
             $pending->timemodified = time();
             $DB->update_record('local_forum_ai_pending', $pending);
-
         } else if ($params['action'] === 'reject') {
             $pending->status       = 'rejected';
             $pending->timemodified = time();

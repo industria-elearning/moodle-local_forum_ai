@@ -39,7 +39,6 @@ function xmldb_local_forum_ai_upgrade($oldversion) {
     // Documentation for the XMLDB Editor can be found at {@link https://docs.moodle.org/dev/XMLDB_editor}.
 
     if ($oldversion < 2025091611) {
-
         $table = new xmldb_table('local_forum_ai_config');
 
         // Adding fields to table local_forum_ai_config.

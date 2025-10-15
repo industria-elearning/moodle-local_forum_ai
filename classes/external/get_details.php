@@ -44,7 +44,6 @@ use moodle_exception;
  * External API class to get details of AI responses in forum discussions.
  */
 class get_details extends external_api {
-
     /**
      * Define los parámetros de entrada de la función webservice.
      *
@@ -152,7 +151,7 @@ class get_details extends external_api {
         foreach ($posts as &$post) {
             if (!empty($post['children'])) {
                 // Ordenar hijos por timestamp de creación.
-                usort($post['children'], function($a, $b) {
+                usort($post['children'], function ($a, $b) {
                     return $a['created_timestamp'] - $b['created_timestamp'];
                 });
 

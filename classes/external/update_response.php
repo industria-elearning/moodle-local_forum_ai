@@ -41,7 +41,6 @@ use context_system;
  * External API class to update pending AI responses in forum discussions.
  */
 class update_response extends external_api {
-
     /**
      * Define los parámetros de entrada de la función webservice.
      *

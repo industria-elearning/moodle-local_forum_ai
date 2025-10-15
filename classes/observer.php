@@ -32,7 +32,6 @@ use mod_forum\event\discussion_created;
  * Clase observadora de eventos para forum_ai.
  */
 class observer {
-
     /**
      * Envía el payload al servicio externo de IA y devuelve el reply.
      *
@@ -95,7 +94,6 @@ class observer {
             self::discussion_created($singleevent);
 
             return true;
-
         } catch (\Exception $e) {
             debugging("forum_ai: Error en course_module_created: " . $e->getMessage(), DEBUG_DEVELOPER);
             return false;
@@ -153,7 +151,6 @@ class observer {
             }
 
             return true;
-
         } catch (\Exception $e) {
             debugging("forum_ai: Error en observer discussion_created: " . $e->getMessage(), DEBUG_DEVELOPER);
             return false;
@@ -189,7 +186,6 @@ class observer {
             if ($status === 'pending') {
                 self::send_moodle_notification($discussion, $pendingid, $approvaltoken);
             }
-
         } catch (\Exception $e) {
             debugging("forum_ai: Error al crear solicitud de aprobación: " . $e->getMessage(), DEBUG_DEVELOPER);
         }
@@ -311,7 +307,6 @@ class observer {
             }
 
             return true;
-
         } catch (\Exception $e) {
             debugging("forum_ai: Error al enviar notificación Moodle: " . $e->getMessage(), DEBUG_DEVELOPER);
             return false;
@@ -356,7 +351,6 @@ class observer {
 
             $DB->insert_record('forum_posts', $post);
             return true;
-
         } catch (\Exception $e) {
             debugging("forum_ai: Error en create_auto_reply: " . $e->getMessage(), DEBUG_DEVELOPER);
             return false;

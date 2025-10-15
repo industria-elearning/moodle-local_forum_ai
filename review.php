@@ -130,7 +130,6 @@ try {
     echo $OUTPUT->header();
     echo $OUTPUT->render_from_template('local_forum_ai/review', $data);
     echo $OUTPUT->footer();
-
 } catch (Exception $e) {
     throw new moodle_exception($e->getMessage(), 'local_forum_ai');
 }
