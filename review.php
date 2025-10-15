@@ -19,7 +19,7 @@
  *
  * @package    local_forum_ai
  * @category   admin
- * @copyright  2025 Piero Llanos
+ * @copyright  2025 Datacurso
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -88,10 +88,14 @@ try {
     $PAGE->set_title(get_string('reviewtitle', 'local_forum_ai'));
     $PAGE->set_heading($course->fullname);
     $PAGE->requires->js_call_amd('local_forum_ai/review', 'init');
+    $PAGE->requires->css('/local/forum_ai/styles/review.css');
 
     $forumurl = new moodle_url('/mod/forum/discuss.php', ['d' => $discussion->id]);
 
-    // Preparar datos para Mustache.
+    $renderer = $PAGE->get_renderer('core');
+    $headerlogo = new \local_assign_ai\output\header_logo();
+    $logocontext = $headerlogo->export_for_template($renderer);
+
     $data = [
         'course' => format_string($course->fullname),
         'forum' => format_string($forum->name),
@@ -107,8 +111,8 @@ try {
         'aiformatted' => s($pending->message),
         'token' => $token,
         'forumurl' => $forumurl->out(),
+        'headerlogo' => $logocontext,
 
-        // Traducciones.
         'strdiscussioninfo' => get_string('discussioninfo', 'local_forum_ai'),
         'strcourse' => get_string('course', 'local_forum_ai'),
         'strforum' => get_string('forum', 'local_forum_ai'),

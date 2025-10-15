@@ -18,7 +18,7 @@
  * Plugin version and other meta-data are defined here.
  *
  * @package     local_forum_ai
- * @copyright   2025 Piero Llanos <piero@datacurso.com>
+ * @copyright   2025 Datacurso
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -29,3 +29,6 @@ $plugin->release = '1.0.0';
 $plugin->version = 2025092400;
 $plugin->requires = 2022112800;
 $plugin->maturity = MATURITY_STABLE;
+$plugin->dependencies = [
+    'aiprovider_datacurso' => 2025100201,
+];

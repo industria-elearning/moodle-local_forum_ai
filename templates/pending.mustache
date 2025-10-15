@@ -48,8 +48,13 @@
     }
 }}
 
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="m-0">{{heading}}</h2>
 
-<h2>{{heading}}</h2>
+    {{#headerlogo}}
+        <img src="{{logourl}}" alt="Logo Datacurso" class="local_forum_ai-pluginlogo">
+    {{/headerlogo}}
+</div>
 
 {{#haspendings}}
 <table class="generaltable">

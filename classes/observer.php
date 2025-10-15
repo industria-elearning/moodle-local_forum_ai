@@ -19,14 +19,14 @@
  *
  * @package    local_forum_ai
  * @category   event
- * @copyright  2025 Piero Llanos
+ * @copyright  2025 Datacurso
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace local_forum_ai;
 
-use mod_forum\event\discussion_created;
 use aiprovider_datacurso\httpclient\ai_services_api;
+use mod_forum\event\discussion_created;
 
 /**
  * Clase observadora de eventos para forum_ai.

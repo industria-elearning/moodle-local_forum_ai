@@ -22,7 +22,7 @@
  *
  * @package    local_forum_ai
  * @category   external
- * @copyright  2025 Piero Llanos <piero@datacurso.com>
+ * @copyright  2025 Datacurso
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -45,11 +45,6 @@ use moodle_exception;
  *
  * Expone el servicio `local_forum_ai_approve_response` que permite
  * aprobar o rechazar respuestas pendientes de aprobación mediante token.
- *
- * @package    local_forum_ai
- * @category   external
- * @copyright  2025 Piero Llanos <piero@datacurso.com>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class approve_response extends external_api {
 
