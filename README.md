@@ -117,43 +117,37 @@ The Forum AI plugin allows teachers to review all AI-generated responses before 
 
 The second way to manage AI-generated responses is through the Pending AI Responses report within the course.
 
-1. Access reports
-   
-   From the course administration panel, navigate to Reports.
-
-   ![Reports](./_docs/images/local_forum_ai_reports.png)
-
-2. Enter Pending AI Responses
+1. Enter Pending AI Responses
 
    Select Pending AI Responses to view all AI messages awaiting review.
 
    ![Reports_responses_pendings](./_docs/images/local_forum_ai_reports_responses_pendings.png)
 
-3. View pending items
+2. View pending items
 
    A list of all AI-generated replies will appear, showing their current status and associated forum threads.
 
    ![Pendings](./_docs/images/local_forum_ai_pendings.png)
 
-4. See detailed response
+3. See detailed response
 
    Click the Details button to open the AI-generated message and related discussion.
 
    ![Pendings_button_details](./_docs/images/local_forum_ai_pendings_button_details.png)
 
-5. View modal with details
+4. View modal with details
 
    A modal window will display the forum thread context along with the AI’s proposed reply.
 
    ![Pendings_details](./_docs/images/local_forum_ai_pendings_details.png)
 
-6. Edit and save
+5. Edit and save
 
    The teacher can edit the AI-generated message and either save it as a draft or approve it for publication.
 
    ![Pendings_details_edit](./_docs/images/local_forum_ai_pendings_details_edit.png)
 
-7. Approve or reject
+6. Approve or reject
 
     Finally, decide whether to approve the AI response (publishing it) or reject it if it doesn’t meet the desired tone or content quality.
 
@@ -165,7 +159,7 @@ All past AI responses — whether approved or rejected — are logged for tracea
 
 1. Access the history
 
-   Within the reports section, go to AI Response History.
+   Go to AI Response History.
 
    ![Reports_history](./_docs/images/local_forum_ai_reports_history.png)
 
