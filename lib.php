@@ -19,7 +19,7 @@
  *
  * @package    local_forum_ai
  * @category   admin
- * @copyright  2025 Piero Llanos
+ * @copyright  2025 Datacurso
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -44,8 +44,10 @@ function local_forum_ai_extend_settings_navigation(settings_navigation $nav, con
     }
 
     // Verificar permisos.
-    if (!has_capability('mod/forum:addquestion', $context) &&
-        !has_capability('moodle/site:config', $context)) {
+    if (
+        !has_capability('mod/forum:addquestion', $context) &&
+        !has_capability('moodle/site:config', $context)
+    ) {
         return;
     }
 
@@ -162,8 +164,11 @@ function local_forum_ai_coursemodule_standard_elements($formwrapper, $mform) {
     $mform->addElement('header', 'local_forum_ai_header', get_string('datacurso_custom', 'local_forum_ai'));
 
     // Habilitar AI.
-    $mform->addElement('select', 'local_forum_ai_enabled',
-        get_string('enabled', 'local_forum_ai'), [
+    $mform->addElement(
+        'select',
+        'local_forum_ai_enabled',
+        get_string('enabled', 'local_forum_ai'),
+        [
             0 => get_string('no'),
             1 => get_string('yes'),
         ]
@@ -171,8 +176,11 @@ function local_forum_ai_coursemodule_standard_elements($formwrapper, $mform) {
     $mform->setDefault('local_forum_ai_enabled', $defaults->enabled);
 
     // Requiere aprobación.
-    $mform->addElement('select', 'local_forum_ai_require_approval',
-        get_string('require_approval', 'local_forum_ai'), [
+    $mform->addElement(
+        'select',
+        'local_forum_ai_require_approval',
+        get_string('require_approval', 'local_forum_ai'),
+        [
             1 => get_string('yes'),
             0 => get_string('no'),
         ]
@@ -180,8 +188,12 @@ function local_forum_ai_coursemodule_standard_elements($formwrapper, $mform) {
     $mform->setDefault('local_forum_ai_require_approval', $defaults->require_approval);
 
     // Mensaje base.
-    $mform->addElement('textarea', 'local_forum_ai_reply_message',
-        get_string('reply_message', 'local_forum_ai'), 'wrap="virtual" rows="3" cols="50"');
+    $mform->addElement(
+        'textarea',
+        'local_forum_ai_reply_message',
+        get_string('reply_message', 'local_forum_ai'),
+        'wrap="virtual" rows="3" cols="50"'
+    );
     $mform->setType('local_forum_ai_reply_message', PARAM_TEXT);
     $mform->setDefault('local_forum_ai_reply_message', $defaults->reply_message);
 }

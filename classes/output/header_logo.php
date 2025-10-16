@@ -14,30 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace local_forum_ai\output;
+
+use renderable;
+use templatable;
+use renderer_base;
+
 /**
- * Definición de proveedores de mensajes del plugin Forum AI.
+ * Class header_logo
  *
  * @package    local_forum_ai
- * @category   message
  * @copyright  2025 Datacurso
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-$messageproviders = [
-    'ai_approval_request' => [
-        // Notificación enviada cuando se genera una respuesta de IA y requiere aprobación.
-        'defaults' => [
-            'popup' => MESSAGE_PERMITTED,
-            'email' => MESSAGE_PERMITTED,
-        ],
-    ],
-    'ai_response_approved' => [
-        // Notificación enviada cuando una respuesta de IA es aprobada automáticamente.
-        'defaults' => [
-            'popup' => MESSAGE_PERMITTED,
-            'email' => MESSAGE_DISALLOWED,
-        ],
-    ],
-];
+class header_logo implements renderable, templatable {
+    /**
+     * Export this data so it can be used as the context for a mustache template.
+     *
+     * @param renderer_base $output The renderer instance used for generating output
+     * @return array Context variables for the template including logo URL and plugin name
+     */
+    public function export_for_template(renderer_base $output): array {
+        return [
+            'logourl' => $output->image_url('logodatacurso', 'local_forum_ai')->out(false),
+        ];
+    }
+}

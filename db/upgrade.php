@@ -19,7 +19,7 @@
  *
  * @package     local_forum_ai
  * @category    upgrade
- * @copyright   2025 Piero Llanos <piero@datacurso.com>
+ * @copyright   2025 Datacurso
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -39,7 +39,6 @@ function xmldb_local_forum_ai_upgrade($oldversion) {
     // Documentation for the XMLDB Editor can be found at {@link https://docs.moodle.org/dev/XMLDB_editor}.
 
     if ($oldversion < 2025091611) {
-
         $table = new xmldb_table('local_forum_ai_config');
 
         // Adding fields to table local_forum_ai_config.

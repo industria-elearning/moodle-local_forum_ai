@@ -19,7 +19,7 @@
  *
  * @package    local_forum_ai
  * @category   admin
- * @copyright  2025 Piero Llanos
+ * @copyright  2025 Datacurso
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -31,12 +31,13 @@ require_login();
 $courseid = required_param('courseid', PARAM_INT);
 $forumid  = optional_param('forumid', 0, PARAM_INT);
 
-$context = context_course::instance($courseid);
+$context = context_system::instance();
 
+$coursecontext = context_course::instance($courseid);
 $allowedroles = ['manager', 'editingteacher', 'coursecreator'];
 
 $hasrole = false;
-$userroles = get_user_roles($context, $USER->id, true);
+$userroles = get_user_roles($coursecontext, $USER->id, true);
 foreach ($userroles as $ur) {
     $shortname = $DB->get_field('role', 'shortname', ['id' => $ur->roleid]);
     if ($shortname && in_array($shortname, $allowedroles, true)) {
@@ -52,9 +53,12 @@ if ($forumid) {
 
 $PAGE->set_url(new moodle_url('/local/forum_ai/history.php', $params));
 $PAGE->set_context($context);
-$PAGE->set_pagelayout('report');
+$PAGE->set_pagelayout('base');
 $PAGE->set_title(get_string('historyresponses', 'local_forum_ai'));
 $PAGE->set_heading(get_string('historyresponses', 'local_forum_ai'));
+$PAGE->requires->css('/local/forum_ai/styles/review.css');
+
+$PAGE->navbar->ignore_active();
 
 if (!$hasrole) {
     echo $OUTPUT->header();
@@ -78,6 +82,10 @@ $statusmap = [
     'pending'  => get_string('statuspending', 'local_forum_ai'),
 ];
 
+$renderer = $PAGE->get_renderer('core');
+$headerlogo = new \local_assign_ai\output\header_logo();
+$logocontext = $headerlogo->export_for_template($renderer);
+
 $templatecontext = [
     'col_course' => get_string('coursename', 'local_forum_ai'),
     'col_forum' => get_string('forumname', 'local_forum_ai'),
@@ -89,6 +97,7 @@ $templatecontext = [
     'noresponses' => get_string('nohistory', 'local_forum_ai'),
     'hashistory' => !empty($records),
     'responses' => [],
+    'headerlogo' => $logocontext,
 ];
 
 foreach ($records as $r) {

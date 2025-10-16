@@ -21,7 +21,7 @@
  * course, posts, and AI response in JSON format.
  *
  * @package    local_forum_ai
- * @copyright  2025 Your Name <your@email>
+ * @copyright  2025 Datacurso
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

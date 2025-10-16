@@ -22,7 +22,7 @@
  *
  * @package    local_forum_ai
  * @category   external
- * @copyright  2025 Piero Llanos <piero@datacurso.com>
+ * @copyright  2025 Datacurso
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -41,7 +41,6 @@ use context_system;
  * External API class to update pending AI responses in forum discussions.
  */
 class update_response extends external_api {
-
     /**
      * Define los parámetros de entrada de la función webservice.
      *

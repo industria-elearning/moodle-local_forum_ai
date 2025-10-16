@@ -18,7 +18,7 @@
  * Funciones auxiliares para el plugin Forum AI.
  *
  * @package    local_forum_ai
- * @copyright  2025 Piero Llanos
+ * @copyright  2025 Datacurso
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -182,7 +182,7 @@ function local_forum_ai_cleanup_expired(): int {
 
     if ($pendings) {
         $ids = array_keys($pendings);
-        list($insql, $inparams) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
+        [$insql, $inparams] = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
         $DB->delete_records_select('local_forum_ai_pending', "id $insql", $inparams);
         return count($ids);
     }
