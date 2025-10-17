@@ -19,10 +19,11 @@
  *
  * @package   local_forum_ai
  * @category  test
+ * @copyright  2025 Datacurso
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_forum_ai\tests;
+namespace local_forum_ai;
 
 use context_system;
 use context_user;

@@ -34,8 +34,6 @@ use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 use stdClass;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Privacy subsystem implementation for local_forum_ai.
  */
