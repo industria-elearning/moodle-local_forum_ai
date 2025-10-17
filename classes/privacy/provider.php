@@ -37,12 +37,6 @@ use stdClass;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Local userlist provider for local_forum_ai.
- */
-interface local_forum_ai_userlist extends core_userlist_provider {
-}
-
-/**
  * Privacy subsystem implementation for local_forum_ai.
  */
 class provider implements
