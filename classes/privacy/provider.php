@@ -49,7 +49,6 @@ class provider implements
     local_forum_ai_userlist,
     \core_privacy\local\request\plugin\provider,
     \core_privacy\local\metadata\provider {
-
     /**
      * Describe the types of personal data stored by this plugin.
      *
