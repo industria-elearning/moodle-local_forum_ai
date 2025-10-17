@@ -52,20 +52,20 @@ class provider implements
     public static function get_metadata(collection $collection): collection {
 
         $collection->add_database_table(
-            'local_forum_ai',
+            'local_forum_ai_pending',
             [
-                'creator_userid' => 'privacy:metadata:local_forum_ai:creator_userid',
-                'discussionid'   => 'privacy:metadata:local_forum_ai:discussionid',
-                'forumid'        => 'privacy:metadata:local_forum_ai:forumid',
-                'message'        => 'privacy:metadata:local_forum_ai:message',
-                'subject'        => 'privacy:metadata:local_forum_ai:subject',
-                'status'         => 'privacy:metadata:local_forum_ai:status',
-                'approved_at'    => 'privacy:metadata:local_forum_ai:approved_at',
-                'approval_token' => 'privacy:metadata:local_forum_ai:approval_token',
-                'timecreated'    => 'privacy:metadata:local_forum_ai:timecreated',
-                'timemodified'   => 'privacy:metadata:local_forum_ai:timemodified',
+                'creator_userid' => 'privacy:metadata:local_forum_ai_pending:creator_userid',
+                'discussionid'   => 'privacy:metadata:local_forum_ai_pending:discussionid',
+                'forumid'        => 'privacy:metadata:local_forum_ai_pending:forumid',
+                'message'        => 'privacy:metadata:local_forum_ai_pending:message',
+                'subject'        => 'privacy:metadata:local_forum_ai_pending:subject',
+                'status'         => 'privacy:metadata:local_forum_ai_pending:status',
+                'approved_at'    => 'privacy:metadata:local_forum_ai_pending:approved_at',
+                'approval_token' => 'privacy:metadata:local_forum_ai_pending:approval_token',
+                'timecreated'    => 'privacy:metadata:local_forum_ai_pending:timecreated',
+                'timemodified'   => 'privacy:metadata:local_forum_ai_pending:timemodified',
             ],
-            'privacy:metadata:local_forum_ai'
+            'privacy:metadata:local_forum_ai_pending'
         );
 
         return $collection;
@@ -111,11 +111,11 @@ class provider implements
         $user = $contextlist->get_user();
         $context = \context_user::instance($user->id);
 
-        $records = $DB->get_records('local_forum_ai', ['creator_userid' => $user->id]);
+        $records = $DB->get_records('local_forum_ai_pending', ['creator_userid' => $user->id]);
 
         foreach ($records as $record) {
             writer::with_context($context)->export_data(
-                [get_string('privacy:metadata:local_forum_ai', 'local_forum_ai')],
+                [get_string('privacy:metadata:local_forum_ai_pending', 'local_forum_ai')],
                 $record
             );
         }
@@ -161,14 +161,14 @@ class provider implements
     }
 
     /**
-     * Return true if the specified userid has data in local_forum_ai table.
+     * Return true if the specified userid has data in local_forum_ai_pending table.
      *
      * @param int $userid The user to check for.
      * @return boolean
      */
     private static function user_has_forumai_data(int $userid): bool {
         global $DB;
-        return $DB->record_exists('local_forum_ai', ['creator_userid' => $userid]);
+        return $DB->record_exists('local_forum_ai_pending', ['creator_userid' => $userid]);
     }
 
     /**
@@ -178,6 +178,6 @@ class provider implements
      */
     private static function delete_user_data(int $userid) {
         global $DB;
-        $DB->delete_records('local_forum_ai', ['creator_userid' => $userid]);
+        $DB->delete_records('local_forum_ai_pending', ['creator_userid' => $userid]);
     }
 }

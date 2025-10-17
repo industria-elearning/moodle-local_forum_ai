@@ -27,11 +27,11 @@ namespace local_forum_ai\privacy;
 use core_privacy\local\request\core_userlist_provider;
 
 /**
-* Local userlist provider for local_forum_ai.
-*
-* @package local_forum_ai
-* @copyright 2025 Datacurso
-* @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-*/
+ * Local userlist provider for local_forum_ai.
+ *
+ * @package local_forum_ai
+ * @copyright 2025 Datacurso
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 interface local_forum_ai_userlist extends core_userlist_provider {
 }

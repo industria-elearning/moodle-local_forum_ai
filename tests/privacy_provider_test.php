@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace local_forum_ai;
+namespace local_forum_ai\tests;
 
 use context_system;
 use context_user;
@@ -40,7 +40,6 @@ use stdClass;
  * @group local_forum_ai_privacy
  */
 final class privacy_provider_test extends provider_testcase {
-
     /**
      * Set up the test environment.
      */
@@ -114,7 +113,7 @@ final class privacy_provider_test extends provider_testcase {
         $approvedlist = new approved_contextlist($user, 'local_forum_ai', [$usercontext->id]);
         provider::export_user_data($approvedlist);
 
-        $data = $writer->get_data([get_string('privacy:metadata:local_forum_ai', 'local_forum_ai')]);
+        $data = $writer->get_data([get_string('privacy:metadata:local_forum_ai_pending', 'local_forum_ai')]);
         foreach ($record as $field => $value) {
             if (isset($data->$field)) {
                 $this->assertEquals((string) $value, (string) $data->$field);
@@ -136,13 +135,13 @@ final class privacy_provider_test extends provider_testcase {
         self::create_userdata($user1->id);
         self::create_userdata($user2->id);
 
-        $this->assertEquals(2, $DB->count_records('local_forum_ai'));
+        $this->assertEquals(2, $DB->count_records('local_forum_ai_pending'));
 
         $context1 = context_user::instance($user1->id);
         provider::delete_data_for_all_users_in_context($context1);
 
-        $this->assertEquals(0, $DB->count_records('local_forum_ai', ['creator_userid' => $user1->id]));
-        $this->assertEquals(1, $DB->count_records('local_forum_ai', ['creator_userid' => $user2->id]));
+        $this->assertEquals(0, $DB->count_records('local_forum_ai_pending', ['creator_userid' => $user1->id]));
+        $this->assertEquals(1, $DB->count_records('local_forum_ai_pending', ['creator_userid' => $user2->id]));
     }
 
     /**
@@ -163,8 +162,8 @@ final class privacy_provider_test extends provider_testcase {
         $approvedlist = new approved_contextlist($user1, 'local_forum_ai', [$context1->id]);
         provider::delete_data_for_user($approvedlist);
 
-        $this->assertEquals(0, $DB->count_records('local_forum_ai', ['creator_userid' => $user1->id]));
-        $this->assertEquals(1, $DB->count_records('local_forum_ai', ['creator_userid' => $user2->id]));
+        $this->assertEquals(0, $DB->count_records('local_forum_ai_pending', ['creator_userid' => $user1->id]));
+        $this->assertEquals(1, $DB->count_records('local_forum_ai_pending', ['creator_userid' => $user2->id]));
     }
 
     /**
@@ -187,7 +186,7 @@ final class privacy_provider_test extends provider_testcase {
         $record->approval_token = md5(uniqid((string)$userid, true));
         $record->timecreated = time();
         $record->timemodified = time();
-        $record->id = $DB->insert_record('local_forum_ai', $record);
+        $record->id = $DB->insert_record('local_forum_ai_pending', $record);
 
         return $record;
     }
