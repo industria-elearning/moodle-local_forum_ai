@@ -40,12 +40,16 @@ defined('MOODLE_INTERNAL') || die();
  * Local userlist provider for local_forum_ai.
  */
 interface local_forum_ai_userlist extends core_userlist_provider {
-};
+}
 
 /**
  * Privacy subsystem implementation for local_forum_ai.
  */
-class provider implements local_forum_ai_userlist, \core_privacy\local\request\plugin\provider, \core_privacy\local\metadata\provider {
+class provider implements
+    local_forum_ai_userlist,
+    \core_privacy\local\request\plugin\provider,
+    \core_privacy\local\metadata\provider {
+
     /**
      * Describe the types of personal data stored by this plugin.
      *
