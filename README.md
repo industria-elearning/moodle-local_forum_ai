@@ -36,12 +36,6 @@ php admin/cli/upgrade.php
 
 to complete the installation from the command line.
 
-## Activar notificaciones
-
-1. Ingresamos a Administración del sitio
-2. Nos dirigimos a ajuste de notificación
-3. Activamos las notificaciones para Foro IA
-
 ## Enable notifications
 
 1. Go to `Site Administration > General > Messaging > Notification settings`
