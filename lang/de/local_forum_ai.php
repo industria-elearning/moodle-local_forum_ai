@@ -51,6 +51,7 @@ $string['forum'] = 'Forum';
 $string['forumname'] = 'Forum';
 $string['historyresponses'] = 'Verlauf der Forum-KI-Antworten';
 $string['level'] = 'Stufe: {$a}';
+$string['messageprovider:ai_approval_request'] = 'KI-Genehmigungsanfrage';
 $string['modal_title'] = 'Details zum Diskussionverlauf';
 $string['modal_title_pending'] = 'Diskussionsdetails';
 $string['no'] = 'Nein';

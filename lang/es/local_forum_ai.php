@@ -26,7 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['actions'] = 'Acciones';
-$string['ai_response'] = 'Respuesta AI';
+$string['ai_response'] = 'Respuesta IA';
 $string['ai_response_approved'] = 'Respuesta IA Aprobada';
 $string['ai_response_proposed'] = 'Respuesta IA propuesta';
 $string['ai_response_rejected'] = 'Respuesta IA Rechazada';
@@ -51,6 +51,7 @@ $string['forum'] = 'Foro';
 $string['forumname'] = 'Foro';
 $string['historyresponses'] = 'Historial de respuestas Foro IA';
 $string['level'] = 'Nivel: {$a}';
+$string['messageprovider:ai_approval_request'] = 'Solicitud de aprobación de IA';
 $string['modal_title'] = 'Detalles del historial de debate';
 $string['modal_title_pending'] = 'Detalles del debate';
 $string['no'] = 'No';

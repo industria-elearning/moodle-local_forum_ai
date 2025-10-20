@@ -51,6 +51,7 @@ $string['forum'] = 'Форум';
 $string['forumname'] = 'Форум';
 $string['historyresponses'] = 'История ответов Форум ИИ';
 $string['level'] = 'Уровень: {$a}';
+$string['messageprovider:ai_approval_request'] = 'Запрос на одобрение ИИ';
 $string['modal_title'] = 'Детали истории обсуждения';
 $string['modal_title_pending'] = 'Детали обсуждения';
 $string['no'] = 'Нет';

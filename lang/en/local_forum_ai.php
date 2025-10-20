@@ -51,6 +51,7 @@ $string['forum'] = 'Forum';
 $string['forumname'] = 'Forum';
 $string['historyresponses'] = 'Forum AI Response History';
 $string['level'] = 'Level: {$a}';
+$string['messageprovider:ai_approval_request'] = 'AI approval request';
 $string['modal_title'] = 'Discussion history details';
 $string['modal_title_pending'] = 'Discussion details';
 $string['no'] = 'No';

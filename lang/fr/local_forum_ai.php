@@ -51,6 +51,7 @@ $string['forum'] = 'Forum';
 $string['forumname'] = 'Forum';
 $string['historyresponses'] = 'Historique des réponses Forum IA';
 $string['level'] = 'Niveau : {$a}';
+$string['messageprovider:ai_approval_request'] = 'Demande d’approbation d’IA';
 $string['modal_title'] = 'Détails de l’historique de discussion';
 $string['modal_title_pending'] = 'Détails de la discussion';
 $string['no'] = 'Non';

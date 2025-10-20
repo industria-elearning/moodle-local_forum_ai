@@ -51,6 +51,7 @@ $string['forum'] = 'Forum';
 $string['forumname'] = 'Forum';
 $string['historyresponses'] = 'Riwayat Respons Forum AI';
 $string['level'] = 'Tingkat: {$a}';
+$string['messageprovider:ai_approval_request'] = 'Permintaan persetujuan AI';
 $string['modal_title'] = 'Detail riwayat diskusi';
 $string['modal_title_pending'] = 'Detail diskusi';
 $string['no'] = 'Tidak';

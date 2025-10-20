@@ -27,17 +27,9 @@ defined('MOODLE_INTERNAL') || die();
 
 $messageproviders = [
     'ai_approval_request' => [
-        // Notificación enviada cuando se genera una respuesta de IA y requiere aprobación.
         'defaults' => [
             'popup' => MESSAGE_PERMITTED,
             'email' => MESSAGE_PERMITTED,
-        ],
-    ],
-    'ai_response_approved' => [
-        // Notificación enviada cuando una respuesta de IA es aprobada automáticamente.
-        'defaults' => [
-            'popup' => MESSAGE_PERMITTED,
-            'email' => MESSAGE_DISALLOWED,
         ],
     ],
 ];
