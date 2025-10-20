@@ -36,6 +36,26 @@ php admin/cli/upgrade.php
 
 to complete the installation from the command line.
 
+## Activar notificaciones
+
+1. Ingresamos a Administración del sitio
+2. Nos dirigimos a ajuste de notificación
+3. Activamos las notificaciones para Foro IA
+
+## Enable notifications
+
+1. Go to Site Administration
+
+   ![Site_Administration](./_docs/images/local_forum_ai_site_admin.png)
+   
+2. Go to Notification Settings
+
+   ![Notification_Settings](./_docs/images/local_forum_ai_notification_settings.png)
+   
+3. Enable notifications for the Forum AI
+
+   ![Active_Settings](./_docs/images/local_forum_ai_active_notification.png)
+
 ## Create a forum in a course
 
 Once installed, Forum AI integrates seamlessly into the standard forum creation process in Moodle.
