@@ -26,7 +26,7 @@ The plugin can also be installed by placing the contents of this directory in
 
 `{su/moodle/dirroot}/local/forum_ai`
 
-Next, log in to your Moodle site as an administrator and go to Site `Administration > General > Notifications` to complete the installation.
+Next, log in to your Moodle site as an administrator and go to `Site Administration > General > Notifications` to complete the installation.
 
 Alternatively, you can run
 
@@ -44,15 +44,11 @@ to complete the installation from the command line.
 
 ## Enable notifications
 
-1. Go to Site Administration
+1. Go to `Site Administration > General > Messaging > Notification settings`
 
    ![Site_Administration](./_docs/images/local_forum_ai_site_admin.png)
-   
-2. Go to Notification Settings
 
-   ![Notification_Settings](./_docs/images/local_forum_ai_notification_settings.png)
-   
-3. Enable notifications for the Forum AI
+2. Enable notifications for the Forum AI
 
    ![Active_Settings](./_docs/images/local_forum_ai_active_notification.png)
 
@@ -61,7 +57,7 @@ to complete the installation from the command line.
 Once installed, Forum AI integrates seamlessly into the standard forum creation process in Moodle.
 
 1. Create a new forum
-   
+
    Begin by adding a forum activity to your course as usual.
 
    ![Create_forum](./_docs/images/local_forum_ai_create.png)
@@ -73,8 +69,9 @@ Once installed, Forum AI integrates seamlessly into the standard forum creation 
    ![Name_type](./_docs/images/local_forum_ai_name_type.png)
 
 3. Enable AI features
-   
+
    Scroll to the “Datacurso Forum AI” section. Here, you can:
+
    - Enable the AI integration for this forum.
    - Enable AI response review, which requires teacher approval before posting AI responses.
    - Give the AI ​​extra directions
@@ -102,7 +99,7 @@ After configuring the forum, you can start using Forum AI in real learning inter
 3. Automatic notifications
 
    When a new discussion is created, notifications are sent to teachers, administrators, and course managers, informing them that AI is ready to analyze and generate potential responses.
-   
+
    ![Notification](./_docs/images/local_forum_ai_notification.png)
 
 ## IA Response Review - Notification
@@ -169,7 +166,7 @@ The second way to manage AI-generated responses is through the Pending AI Respon
 
 6. Approve or reject
 
-    Finally, decide whether to approve the AI response (publishing it) or reject it if it doesn’t meet the desired tone or content quality.
+   Finally, decide whether to approve the AI response (publishing it) or reject it if it doesn’t meet the desired tone or content quality.
 
    ![Pendings_approve_rejected](./_docs/images/local_forum_ai_pendings_approve_rejected.png)
 
