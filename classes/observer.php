@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Observadores de eventos para forum_ai.
+ * Event observers for forum_ai plugin.
  *
  * @package    local_forum_ai
  * @category   event
@@ -29,15 +29,15 @@ use aiprovider_datacurso\httpclient\ai_services_api;
 use mod_forum\event\discussion_created;
 
 /**
- * Clase observadora de eventos para forum_ai.
+ * Event observer class for forum_ai.
  */
 class observer {
     /**
-     * Envía el payload al servicio externo de IA y devuelve el reply.
+     * Sends the payload to the external AI service and returns its reply.
      *
-     * @param array $payload
-     * @return string
-     * @throws moodle_exception
+     * @param array $payload Data to send to the AI service.
+     * @return string The AI-generated reply.
+     * @throws \moodle_exception If the request fails.
      */
     protected static function call_ai_service(array $payload) {
         $client = new ai_services_api();
@@ -46,10 +46,10 @@ class observer {
     }
 
     /**
-     * Maneja la creación de foros de tipo "single".
+     * Handles creation of "single type" forums.
      *
-     * @param \core\event\course_module_created $event
-     * @return bool
+     * @param \core\event\course_module_created $event The event triggered when a module is created.
+     * @return bool True on success or when no action is needed, false on error.
      */
     public static function course_module_created(\core\event\course_module_created $event): bool {
         global $DB;
@@ -96,10 +96,10 @@ class observer {
     }
 
     /**
-     * Maneja la creación de discusiones.
+     * Handles discussion creation events.
      *
-     * @param discussion_created $event
-     * @return bool
+     * @param discussion_created $event The discussion created event.
+     * @return bool True on success, false on error.
      */
     public static function discussion_created(discussion_created $event): bool {
         global $DB;
@@ -152,12 +152,12 @@ class observer {
     }
 
     /**
-     * Crea solicitud de aprobación y envía notificación.
+     * Creates an approval request and sends a notification.
      *
-     * @param object $discussion
-     * @param object $forum
-     * @param string $message
-     * @param string $status
+     * @param object $discussion The discussion object.
+     * @param object $forum The forum object.
+     * @param string $message The AI-generated message.
+     * @param string $status The approval status ('pending' or 'approved').
      * @return void
      */
     private static function create_approval_request($discussion, $forum, string $message, string $status = 'pending'): void {
@@ -187,13 +187,13 @@ class observer {
     }
 
     /**
-     * Envía notificación usando el sistema nativo de Moodle.
+     * Sends a notification using Moodle's messaging system.
      *
-     * @param object $discussion
-     * @param object $forum
-     * @param int $pendingid
-     * @param string $approvaltoken
-     * @return bool
+     * @param object $discussion The discussion object.
+     * @param object $forum The forum object.
+     * @param int $pendingid The pending approval ID.
+     * @param string $approvaltoken The unique approval token.
+     * @return bool True on success, false on error.
      */
     private static function send_moodle_notification($discussion, $forum, int $pendingid, string $approvaltoken): bool {
         global $DB, $PAGE;
@@ -290,7 +290,17 @@ class observer {
     }
 
     /**
-     * Genera el mensaje en texto plano para la notificación.
+     * Generates the plain text message for the notification.
+     *
+     * @param string $firstname The recipient's first name.
+     * @param string $discussionname The discussion name.
+     * @param string $forumname The forum name.
+     * @param string $coursefullname The course full name.
+     * @param string $preview The AI message preview.
+     * @param string $reviewurl The review URL.
+     * @param string $approveurl The approval URL.
+     * @param string $rejecturl The rejection URL.
+     * @return string The formatted plain text message.
      */
     private static function get_plain_text_message(
         string $firstname,
@@ -318,7 +328,11 @@ class observer {
     }
 
     /**
-     * Crea la respuesta automática en el foro.
+     * Creates an automatic AI reply in the forum discussion.
+     *
+     * @param object $discussion The discussion object.
+     * @param string $message The AI-generated message content.
+     * @return bool True on success, false on failure.
      */
     public static function create_auto_reply($discussion, string $message): bool {
         global $DB;
