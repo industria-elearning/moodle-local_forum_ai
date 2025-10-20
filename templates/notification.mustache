@@ -1,0 +1,70 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+@template local_forum_ai/notification
+
+This template renders an AI approval request notification email.
+
+Example context (json):
+{
+    "str_greeting": "Hello John,",
+    "discussionname": "AI and Learning",
+    "forumname": "Teaching Ideas",
+    "preview": "This is an example of an AI-generated reply to a forum post.",
+    "reviewurl": "https://moodle.local/local/forum_ai/review.php?token=abc123",
+    "coursefullname": "Artificial Intelligence 101",
+    "str_subject": "AI Reply Approval Request",
+    "str_preview_label": "Preview",
+    "str_review_button": "Review Message",
+    "str_course_label": "Course"
+}
+}}
+
+<div style="font-family: Arial, sans-serif; max-width: 600px; color: #333;">
+    <h3 style="color: #0f6cbf; margin-bottom: 20px; font-size: 1.3em;">
+        {{#str_subject}}{{str_subject}}{{/str_subject}}
+    </h3>
+
+    <p style="font-weight: bold; margin-bottom: 15px;">{{{str_greeting}}}</p>
+
+    <p style="margin-bottom: 20px; line-height: 1.6;">
+        {{#str}}notification_intro, local_forum_ai, {
+            "discussion": "{{discussionname}}",
+            "forum": "{{forumname}}",
+            "course": "{{coursefullname}}"
+        }{{/str}}
+    </p>
+
+    <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #0f6cbf; margin: 15px 0; border-radius: 4px;">
+        <h4 style="margin-top: 0; margin-bottom: 10px; font-size: 1.1em; color: #333;">
+            {{#str_preview_label}}{{str_preview_label}}{{/str_preview_label}}
+        </h4>
+        <div style="background: white; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.95em; line-height: 1.5; color: #555;">
+            {{{preview}}}...
+        </div>
+    </div>
+
+    <div style="margin: 20px 0; display: inline-block;">
+        <a href="{{reviewurl}}" style="background-color: #0f6cbf; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; display: inline-block; margin-right: 10px; font-weight: bold; border: none; cursor: pointer;">
+            {{str_review_button}}
+        </a>
+    </div>
+
+    <p style="color: #666; font-size: 0.9em; margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee;">
+        <strong style="color: #333;">{{str_course_label}}: {{coursefullname}}</strong>
+    </p>
+</div>
