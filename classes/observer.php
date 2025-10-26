@@ -81,17 +81,36 @@ class observer {
             }
 
             $singleevent = \mod_forum\event\discussion_created::create([
-                'objectid' => $discussion->id,
-                'context' => $event->get_context(),
-                'courseid' => $event->courseid,
-                'relateduserid' => $discussion->userid,
-                'other' => ['forumid' => $forumid],
+            'objectid' => $discussion->id,
+            'context' => $event->get_context(),
+            'courseid' => $event->courseid,
+            'relateduserid' => $discussion->userid,
+            'other' => ['forumid' => $forumid],
             ]);
 
-            self::discussion_created($singleevent);
+            try {
+                self::discussion_created($singleevent);
+            } catch (\Throwable $e) {
+                debugging('Error en AI durante la creación del foro: ' . $e->getMessage(), DEBUG_DEVELOPER);
+
+                \core\notification::add(
+                    get_string('error_airequest', 'local_forum_ai', $e->getMessage()),
+                    \core\output\notification::NOTIFY_ERROR
+                );
+
+                return true;
+            }
+
             return true;
         } catch (\Exception $e) {
-            return false;
+            debugging('Error general en course_module_created: ' . $e->getMessage(), DEBUG_DEVELOPER);
+
+            \core\notification::add(
+                get_string('error_airequest', 'local_forum_ai', $e->getMessage()),
+                \core\output\notification::NOTIFY_ERROR
+            );
+
+            return true;
         }
     }
 
@@ -125,29 +144,41 @@ class observer {
             $course = $DB->get_record('course', ['id' => $forum->course], '*', MUST_EXIST);
 
             $payload = [
-                'course' => $course->fullname,
-                'forum' => $forum->name,
-                'discussion' => $discussion->name,
-                'userid' => $discussion->userid,
-                'post' => [
-                    'subject' => $post->subject,
-                    'message' => strip_tags($post->message),
-                ],
-                'prompt' => $replymessage,
+            'course' => $course->fullname,
+            'forum' => $forum->name,
+            'discussion' => $discussion->name,
+            'userid' => $discussion->userid,
+            'post' => [
+                'subject' => $post->subject,
+                'message' => strip_tags($post->message),
+            ],
+            'prompt' => $replymessage,
             ];
 
-            $airesponse = self::call_ai_service($payload);
+            try {
+                $airesponse = self::call_ai_service($payload);
 
-            if ($requireapproval) {
-                self::create_approval_request($discussion, $forum, $airesponse, 'pending');
-            } else {
-                self::create_approval_request($discussion, $forum, $airesponse, 'approved');
-                self::create_auto_reply($discussion, $airesponse);
+                if ($requireapproval) {
+                    self::create_approval_request($discussion, $forum, $airesponse, 'pending');
+                } else {
+                    self::create_approval_request($discussion, $forum, $airesponse, 'approved');
+                    self::create_auto_reply($discussion, $airesponse);
+                }
+            } catch (\Throwable $e) {
+                debugging('Error al comunicarse con el servicio de IA: ' . $e->getMessage(), DEBUG_DEVELOPER);
+
+                \core\notification::add(
+                    get_string('error_airequest', 'local_forum_ai', $e->getMessage()),
+                    \core\output\notification::NOTIFY_ERROR
+                );
+
+                return true;
             }
 
             return true;
         } catch (\Exception $e) {
-            return false;
+            debugging('Error general en discussion_created: ' . $e->getMessage(), DEBUG_DEVELOPER);
+            return true;
         }
     }
 

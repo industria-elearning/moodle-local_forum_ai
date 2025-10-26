@@ -47,6 +47,7 @@ $string['discussioninfo'] = 'Diskussionsinformation';
 $string['discussionmsg'] = 'Nachricht von KI erstellt';
 $string['discussionname'] = 'Betreff';
 $string['enabled'] = 'KI aktivieren';
+$string['error_airequest'] = 'Fehler bei der Kommunikation mit dem KI-Dienst: {$a}';
 $string['forum'] = 'Forum';
 $string['forumname'] = 'Forum';
 $string['historyresponses'] = 'Verlauf der KI-Antworten im Forum';

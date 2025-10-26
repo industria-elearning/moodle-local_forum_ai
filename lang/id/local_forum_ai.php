@@ -47,6 +47,7 @@ $string['discussioninfo'] = 'Informasi diskusi';
 $string['discussionmsg'] = 'Pesan yang dibuat oleh AI';
 $string['discussionname'] = 'Subjek';
 $string['enabled'] = 'Aktifkan AI';
+$string['error_airequest'] = 'Kesalahan saat berkomunikasi dengan layanan AI: {$a}';
 $string['forum'] = 'Forum';
 $string['forumname'] = 'Forum';
 $string['historyresponses'] = 'Riwayat respons Forum AI';
