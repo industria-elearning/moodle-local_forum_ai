@@ -47,6 +47,7 @@ $string['discussioninfo'] = 'Информация об обсуждении';
 $string['discussionmsg'] = 'Сообщение, созданное ИИ';
 $string['discussionname'] = 'Тема';
 $string['enabled'] = 'Включить ИИ';
+$string['error_airequest'] = 'Ошибка при обращении к сервису ИИ: {$a}';
 $string['forum'] = 'Форум';
 $string['forumname'] = 'Форум';
 $string['historyresponses'] = 'История ответов ИИ на форуме';

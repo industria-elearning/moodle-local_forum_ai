@@ -47,6 +47,7 @@ $string['discussioninfo'] = 'Información del debate';
 $string['discussionmsg'] = 'Mensaje hecho por IA';
 $string['discussionname'] = 'Asunto';
 $string['enabled'] = 'Habilitar AI';
+$string['error_airequest'] = 'Error al comunicarse con el servicio de IA: {$a}';
 $string['forum'] = 'Foro';
 $string['forumname'] = 'Foro';
 $string['historyresponses'] = 'Historial de respuestas Foro IA';
