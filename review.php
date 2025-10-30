@@ -116,5 +116,6 @@ try {
     echo $OUTPUT->render_from_template('local_forum_ai/review', $data);
     echo $OUTPUT->footer();
 } catch (Exception $e) {
-    throw new moodle_exception($e->getMessage(), 'local_forum_ai');
+    debugging('Error in review.php: ' . $e->getMessage(), DEBUG_DEVELOPER);
+    throw new moodle_exception('error_airequest', 'local_forum_ai', '', $e->getMessage());
 }

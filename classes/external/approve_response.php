@@ -108,7 +108,7 @@ class approve_response extends external_api {
         if ($params['action'] === 'approve') {
             require_once($CFG->dirroot . '/mod/forum/lib.php');
 
-            $teacher = get_editingteachers($course->id, true);
+            $teacher = local_forum_ai_get_editingteachers($course->id, true);
 
             if (!$teacher) {
                 throw new moodle_exception('noteachersfound', 'local_forum_ai');

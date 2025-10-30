@@ -32,12 +32,12 @@ function local_forum_ai_cleanup_pending() {
     global $DB;
 
     // Deletes records with non-existent forums.
-    $DB->execute("DELETE FROM {local_forum_ai_pending}
-                   WHERE forumid NOT IN (SELECT id FROM {forum})");
+    $DB->delete_records_select('local_forum_ai_pending',
+        'forumid NOT IN (SELECT id FROM {forum})');
 
     // Deletes records with non-existent discussions.
-    $DB->execute("DELETE FROM {local_forum_ai_pending}
-                   WHERE discussionid NOT IN (SELECT id FROM {forum_discussions})");
+    $DB->delete_records_select('local_forum_ai_pending',
+        'discussionid NOT IN (SELECT id FROM {forum_discussions})');
 }
 
 /**
@@ -129,7 +129,7 @@ function local_forum_ai_get_history(int $courseid, int $forumid = 0) {
  * @param bool $single Whether to return only one.
  * @return \stdClass|array|null
  */
-function get_editingteachers(int $courseid, bool $single = false) {
+function local_forum_ai_get_editingteachers(int $courseid, bool $single = false) {
     global $DB;
 
     $context = \context_course::instance($courseid);

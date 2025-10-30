@@ -1,0 +1,109 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_forum_ai/config_form
+
+    Configuration form for Forum AI plugin.
+
+    Context variables required for this template:
+    * actionurl - Form action URL
+    * sesskey - Session key
+    * enabledoptions - Array of enabled options
+    * requireapprovaloptions - Array of approval options
+    * replymessage - Current reply message
+    * cancelurl - Cancel URL
+    * strings - Array of translated strings
+
+    Example context (json):
+    {
+        "actionurl": "/local/forum_ai/config.php",
+        "sesskey": "abc123",
+        "enabledoptions": [
+            {"value": 0, "label": "No", "selected": true},
+            {"value": 1, "label": "Yes", "selected": false}
+        ],
+        "requireapprovaloptions": [
+            {"value": 1, "label": "Yes", "selected": true},
+            {"value": 0, "label": "No", "selected": false}
+        ],
+        "replymessage": "Default message",
+        "cancelurl": "/mod/forum/view.php?id=1",
+        "strings": {
+            "enabled": "Enabled",
+            "requireapproval": "Require approval",
+            "replymessage": "Reply message",
+            "save": "Save",
+            "cancel": "Cancel"
+        }
+    }
+}}
+
+<div class="container-fluid">
+    <form method="post" action="{{{actionurl}}}" class="mform">
+        <input type="hidden" name="action" value="save">
+        <input type="hidden" name="sesskey" value="{{sesskey}}">
+
+        <div class="form-group row fitem">
+            <div class="col-md-3 col-form-label d-flex pb-0 pr-md-0">
+                <label for="id_enabled" class="d-inline word-break">
+                    {{strings.enabled}}
+                </label>
+            </div>
+            <div class="col-md-9 form-inline align-items-start felement">
+                <select name="enabled" id="id_enabled" class="custom-select">
+                    {{#enabledoptions}}
+                    <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
+                    {{/enabledoptions}}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group row fitem">
+            <div class="col-md-3 col-form-label d-flex pb-0 pr-md-0">
+                <label for="id_require_approval" class="d-inline word-break">
+                    {{strings.requireapproval}}
+                </label>
+            </div>
+            <div class="col-md-9 form-inline align-items-start felement">
+                <select name="require_approval" id="id_require_approval" class="custom-select">
+                    {{#requireapprovaloptions}}
+                    <option value="{{value}}" {{#selected}}selected{{/selected}}>{{label}}</option>
+                    {{/requireapprovaloptions}}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group row fitem">
+            <div class="col-md-3 col-form-label d-flex pb-0 pr-md-0">
+                <label for="id_reply_message" class="d-inline word-break">
+                    {{strings.replymessage}}
+                </label>
+            </div>
+            <div class="col-md-9 form-inline align-items-start felement">
+                <textarea name="reply_message" id="id_reply_message" rows="4" class="form-control w-100">{{replymessage}}</textarea>
+            </div>
+        </div>
+
+        <div class="form-group row fitem">
+            <div class="col-md-3 col-form-label d-flex pb-0 pr-md-0"></div>
+            <div class="col-md-9 form-inline align-items-start felement">
+                <button type="submit" class="btn btn-primary">{{strings.save}}</button>
+                <a href="{{{cancelurl}}}" class="btn btn-secondary ml-2">{{strings.cancel}}</a>
+            </div>
+        </div>
+    </form>
+</div>

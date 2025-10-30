@@ -1,18 +1,33 @@
 import Ajax from 'core/ajax';
 import Notification from 'core/notification';
+import { get_string as getString } from 'core/str';
 
 /**
  * JS controller for the AI response review page.
  */
-export const init = () => {
+export const init = async () => {
     const editBtn = document.getElementById("edit-btn");
     const viewDiv = document.getElementById("airesponse-view");
     const editForm = document.getElementById("airesponse-edit");
     const cancelBtn = document.getElementById("cancel-edit");
     const textarea = editForm ? editForm.querySelector("textarea[name='message']") : null;
     const saveBtn = editForm ? editForm.querySelector("button[type='submit']") : null;
-
     const token = editForm ? editForm.dataset.token : null;
+
+    // Preload strings used throughout the UI
+    const [
+        strUpdatedSuccess,
+        strUpdatedError,
+        strApproved,
+        strRejected,
+        strActionFailed
+    ] = await Promise.all([
+        getString('response_updated', 'local_forum_ai'),
+        getString('response_update_failed', 'local_forum_ai'),
+        getString('response_approved', 'local_forum_ai'),
+        getString('response_rejected', 'local_forum_ai'),
+        getString('action_failed', 'local_forum_ai'),
+    ]);
 
     // --- Toggle editing ---
     if (editBtn) {
@@ -44,7 +59,7 @@ export const init = () => {
                     viewDiv.querySelector(".card-text").innerHTML = response.message;
 
                     Notification.addNotification({
-                        message: "Response successfully updated.",
+                        message: strUpdatedSuccess,
                         type: "success"
                     });
 
@@ -53,7 +68,7 @@ export const init = () => {
                     viewDiv.style.display = "block";
                 } else {
                     Notification.addNotification({
-                        message: "The response could not be updated.",
+                        message: strUpdatedError,
                         type: "error"
                     });
                 }
@@ -75,18 +90,17 @@ export const init = () => {
             }])[0].done(response => {
                 if (response.success) {
                     Notification.addNotification({
-                        message: action === "approve"
-                            ? "AI response approved and successfully published."
-                            : "AI response rejected.",
+                        message: action === "approve" ? strApproved : strRejected,
                         type: "success"
                     });
 
                     setTimeout(() => {
-                        window.location.href = M.cfg.wwwroot + "/mod/forum/discuss.php?d=" + btn.dataset.discussionid;
+                        window.location.href =
+                            `${M.cfg.wwwroot}/mod/forum/discuss.php?d=${btn.dataset.discussionid}`;
                     }, 1500);
                 } else {
                     Notification.addNotification({
-                        message: "The action could not be processed.",
+                        message: strActionFailed,
                         type: "error"
                     });
                 }

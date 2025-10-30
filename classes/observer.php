@@ -370,7 +370,7 @@ class observer {
 
         try {
             $course = $DB->get_record('course', ['id' => $discussion->course], '*', MUST_EXIST);
-            $teachers = get_editingteachers($course->id);
+            $teachers = local_forum_ai_get_editingteachers($course->id);
 
             if (empty($teachers)) {
                 return false;
@@ -393,5 +393,26 @@ class observer {
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    /**
+     * Triggered when a course module is deleted.
+     *
+     * @param \core\event\course_module_deleted $event
+     * @return void
+     */
+    public static function forum_deleted(\core\event\course_module_deleted $event): void {
+        global $DB;
+
+        // Check if the deleted module is a forum.
+        if ($event->other['modulename'] !== 'forum') {
+            return;
+        }
+
+        $forumid = $event->other['instanceid'];
+
+        // Delete related records from plugin tables.
+        $DB->delete_records('local_forum_ai_config', ['forumid' => $forumid]);
+        $DB->delete_records('local_forum_ai_pending', ['forumid' => $forumid]);
     }
 }

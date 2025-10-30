@@ -55,17 +55,19 @@ $tableexists = $DB->get_manager()->table_exists('local_forum_ai_config');
 if (!$tableexists) {
     echo $OUTPUT->header();
     echo $OUTPUT->notification(
-        'The configuration table does not exist. Please update the plugin from ' .
-        'Site administration > Notifications.',
-        'error'
+        get_string('err_table_missing', 'local_forum_ai'),
+        \core\output\notification::NOTIFY_ERROR
     );
-    echo '<p><a href="' . new moodle_url('/admin/index.php') .
-        '" class="btn btn-primary">Go to Notifications</a></p>';
+    echo html_writer::link(
+        new moodle_url('/admin/index.php'),
+        get_string('goto_notifications', 'local_forum_ai'),
+        ['class' => 'btn btn-primary']
+    );
     echo $OUTPUT->footer();
     exit;
 }
 
-// Process form.
+// Process form submission.
 if ($action === 'save' && confirm_sesskey()) {
     $enabled = optional_param('enabled', 0, PARAM_INT);
     $replymessage = optional_param('reply_message', '', PARAM_TEXT);
@@ -85,29 +87,30 @@ if ($action === 'save' && confirm_sesskey()) {
         if ($existing) {
             $record->id = $existing->id;
             $DB->update_record('local_forum_ai_config', $record);
-            $message = 'Configuration updated successfully';
+            $message = get_string('config_updated', 'local_forum_ai');
         } else {
             $record->timecreated = time();
             $DB->insert_record('local_forum_ai_config', $record);
-            $message = 'Configuration created successfully';
+            $message = get_string('config_created', 'local_forum_ai');
         }
 
         redirect($PAGE->url, $message, null, \core\output\notification::NOTIFY_SUCCESS);
     } catch (Exception $e) {
         redirect(
             $PAGE->url,
-            'Error while saving: ' . $e->getMessage(),
+            get_string('error_saving', 'local_forum_ai', $e->getMessage()),
             null,
             \core\output\notification::NOTIFY_ERROR
         );
     }
 }
 
-// Get current configuration with error handling.
-$config = new stdClass();
-$config->enabled = 0;
-$config->reply_message = 'Thank you for your participation. A moderator will review your message.';
-$config->require_approval = 1;
+// Get current configuration with fallback defaults.
+$config = (object)[
+    'enabled' => 0,
+    'reply_message' => get_string('default_reply_message', 'local_forum_ai'),
+    'require_approval' => 1,
+];
 
 try {
     $existingconfig = $DB->get_record('local_forum_ai_config', ['forumid' => $forumid]);
@@ -121,49 +124,48 @@ try {
     debugging('Error retrieving configuration: ' . $e->getMessage(), DEBUG_DEVELOPER);
 }
 
+$templatedata = [
+    'forumname' => format_string($forum->name),
+    'actionurl' => $PAGE->url->out(false),
+    'sesskey' => sesskey(),
+    'enabled' => $config->enabled,
+    'enabledoptions' => [
+        [
+            'value' => 0,
+            'label' => get_string('no', 'local_forum_ai'),
+            'selected' => $config->enabled == 0
+        ],
+        [
+            'value' => 1,
+            'label' => get_string('yes', 'local_forum_ai'),
+            'selected' => $config->enabled == 1
+        ]
+    ],
+    'requireapproval' => $config->require_approval,
+    'requireapprovaloptions' => [
+        [
+            'value' => 1,
+            'label' => get_string('yes', 'local_forum_ai'),
+            'selected' => $config->require_approval == 1
+        ],
+        [
+            'value' => 0,
+            'label' => get_string('no', 'local_forum_ai'),
+            'selected' => $config->require_approval == 0
+        ]
+    ],
+    'replymessage' => $config->reply_message,
+    'cancelurl' => (new moodle_url('/mod/forum/view.php', ['id' => $cm->id]))->out(false),
+    'strings' => [
+        'enabled' => get_string('enabled', 'local_forum_ai'),
+        'requireapproval' => get_string('require_approval', 'local_forum_ai'),
+        'replymessage' => get_string('reply_message', 'local_forum_ai'),
+        'save' => get_string('save', 'local_forum_ai'),
+        'cancel' => get_string('cancel', 'local_forum_ai')
+    ]
+];
+
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('settings', 'local_forum_ai')  . format_string($forum->name));
-
-// Rest of the form.
-echo '<div class="container-fluid">';
-echo '<form method="post" action="' . $PAGE->url . '" class="form">';
-echo '<input type="hidden" name="action" value="save">';
-echo '<input type="hidden" name="sesskey" value="' . sesskey() . '">';
-
-echo '<div class="form-group">';
-echo '<label for="enabled">' . get_string('enabled', 'local_forum_ai') . '</label>';
-echo '<select name="enabled" id="enabled" class="form-control">';
-echo '<option value="0"' . ($config->enabled == 0 ? ' selected' : '') . '>' . get_string('no', 'local_forum_ai') . '</option>';
-echo '<option value="1"' . ($config->enabled == 1 ? ' selected' : '') . '>' . get_string('yes', 'local_forum_ai') . '</option>';
-echo '</select>';
-echo '</div>';
-
-echo '<div class="form-group">';
-echo '<label for="require_approval">' . get_string('require_approval', 'local_forum_ai') . '</label>';
-echo '<select name="require_approval" id="require_approval" class="form-control">';
-echo '<option value="1"' .
-    ($config->require_approval == 1 ? ' selected' : '') .
-    '>' . get_string('yes', 'local_forum_ai') . '</option>';
-
-echo '<option value="0"' .
-    ($config->require_approval == 0 ? ' selected' : '') .
-    '>' . get_string('no', 'local_forum_ai') . '</option>';
-echo '</select>';
-echo '</div>';
-
-echo '<div class="form-group">';
-echo '<label for="reply_message">' . get_string('reply_message', 'local_forum_ai') . '</label>';
-echo '<textarea name="reply_message" id="reply_message" rows="4" class="form-control">' .
-    s($config->reply_message) . '</textarea>';
-echo '</div>';
-
-echo '<div class="form-group">';
-echo '<button type="submit" class="btn btn-primary">' . get_string('save', 'local_forum_ai') . '</button> ';
-echo '<a href="' . new moodle_url('/mod/forum/view.php', ['id' => $cm->id]) .
-    '" class="btn btn-secondary">' . get_string('cancel', 'local_forum_ai') . '</a>';
-echo '</div>';
-
-echo '</form>';
-echo '</div>';
-
+echo $OUTPUT->heading(get_string('settings_forum', 'local_forum_ai', format_string($forum->name)));
+echo $OUTPUT->render_from_template('local_forum_ai/config_form', $templatedata);
 echo $OUTPUT->footer();

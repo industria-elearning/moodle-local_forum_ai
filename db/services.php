@@ -51,4 +51,13 @@ $functions = [
         'type'        => 'write',
         'ajax'        => true,
     ],
+    'local_forum_ai_get_discussion_data' => [
+        'classname'   => 'local_forum_ai\\external\\get_discussion_data',
+        'methodname'  => 'execute',
+        'classpath'   => '',
+        'description' => 'Returns discussion, posts and AI response data for a given approval token.',
+        'type'        => 'read',
+        'capabilities'=> 'mod/forum:viewdiscussion',
+        'ajax'        => true,
+    ],
 ];
