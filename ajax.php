@@ -39,10 +39,10 @@ $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MU
 $context = context_module::instance($cm->id);
 require_capability('mod/forum:viewdiscussion', $context);
 
-// Obtener posts del hilo.
+// Get thread posts.
 $posts = $DB->get_records('forum_posts', ['discussion' => $discussion->id], 'created ASC');
 
-// Construir datos para JSON.
+// Build data for JSON.
 $data = [
     'discussion' => format_string($discussion->name),
     'forum'      => format_string($forum->name),

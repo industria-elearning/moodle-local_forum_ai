@@ -24,7 +24,6 @@
     transform: scale(1.05);
 }
 
-/* Ajuste para pantallas pequeñas */
 @media (max-width: 768px) {
     .local_forum_ai-logo-wrapper {
         justify-content: center;

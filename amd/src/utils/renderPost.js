@@ -4,13 +4,13 @@ let replyTemplateCache = null;
 let levelTemplateCache = null;
 
 /**
- * Renderiza un post individual con su nivel de indentación correspondiente
+ * Renders an individual post with its corresponding indentation level
  *
- * @param {Object} post Datos del post
- * @returns {Promise<string>} HTML del post (async porque carga traducciones si aún no están)
+ * @param {Object} post Post data
+ * @returns {Promise<string>} Post HTML (async because it loads translations if not already cached)
  */
 export async function renderPost(post) {
-    // Precargar plantillas solo una vez
+    // Preload templates only once
     if (!replyTemplateCache || !levelTemplateCache) {
         [replyTemplateCache, levelTemplateCache] = await Promise.all([
             getString('replylevel', 'local_forum_ai'),

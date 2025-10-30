@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Configuración del plugin Forum AI.
+ * Forum AI plugin configuration.
  *
  * @package    local_forum_ai
  * @category   admin

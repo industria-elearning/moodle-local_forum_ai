@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Configuración del plugin Forum AI.
+ * Forum AI plugin configuration.
  *
  * @package    local_forum_ai
  * @category   admin
@@ -30,7 +30,7 @@ $forumid = required_param('forumid', PARAM_INT);
 $action = optional_param('action', 'view', PARAM_ALPHA);
 
 try {
-    // Verificar foro existe.
+    // Verify forum exists.
     $forum = $DB->get_record('forum', ['id' => $forumid], '*', MUST_EXIST);
     $course = $DB->get_record('course', ['id' => $forum->course], '*', MUST_EXIST);
     $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
@@ -49,30 +49,30 @@ $PAGE->set_context($context);
 $PAGE->navbar->add($forum->name, new moodle_url('/mod/forum/view.php', ['id' => $cm->id]));
 $PAGE->navbar->add(get_string('pluginname', 'local_forum_ai'));
 
-// Verificar si la tabla existe.
+// Check if the table exists.
 $tableexists = $DB->get_manager()->table_exists('local_forum_ai_config');
 
 if (!$tableexists) {
     echo $OUTPUT->header();
     echo $OUTPUT->notification(
-        'La tabla de configuración no existe. Por favor, actualiza el plugin desde ' .
-        'Administración del sitio > Notificaciones.',
+        'The configuration table does not exist. Please update the plugin from ' .
+        'Site administration > Notifications.',
         'error'
     );
     echo '<p><a href="' . new moodle_url('/admin/index.php') .
-        '" class="btn btn-primary">Ir a Notificaciones</a></p>';
+        '" class="btn btn-primary">Go to Notifications</a></p>';
     echo $OUTPUT->footer();
     exit;
 }
 
-// Procesar formulario.
+// Process form.
 if ($action === 'save' && confirm_sesskey()) {
     $enabled = optional_param('enabled', 0, PARAM_INT);
     $replymessage = optional_param('reply_message', '', PARAM_TEXT);
     $requireapproval = optional_param('require_approval', 1, PARAM_INT);
 
     try {
-        // Verificar si ya existe configuración para este foro.
+        // Check if configuration already exists for this forum.
         $existing = $DB->get_record('local_forum_ai_config', ['forumid' => $forumid]);
 
         $record = new stdClass();
@@ -85,28 +85,28 @@ if ($action === 'save' && confirm_sesskey()) {
         if ($existing) {
             $record->id = $existing->id;
             $DB->update_record('local_forum_ai_config', $record);
-            $message = 'Configuración actualizada correctamente';
+            $message = 'Configuration updated successfully';
         } else {
             $record->timecreated = time();
             $DB->insert_record('local_forum_ai_config', $record);
-            $message = 'Configuración creada correctamente';
+            $message = 'Configuration created successfully';
         }
 
         redirect($PAGE->url, $message, null, \core\output\notification::NOTIFY_SUCCESS);
     } catch (Exception $e) {
         redirect(
             $PAGE->url,
-            'Error al guardar: ' . $e->getMessage(),
+            'Error while saving: ' . $e->getMessage(),
             null,
             \core\output\notification::NOTIFY_ERROR
         );
     }
 }
 
-// Obtener configuración actual con manejo de errores.
+// Get current configuration with error handling.
 $config = new stdClass();
 $config->enabled = 0;
-$config->reply_message = 'Gracias por tu participación. Un moderador revisará tu mensaje.';
+$config->reply_message = 'Thank you for your participation. A moderator will review your message.';
 $config->require_approval = 1;
 
 try {
@@ -118,13 +118,13 @@ try {
         }
     }
 } catch (Exception $e) {
-    debugging('Error al obtener configuración: ' . $e->getMessage(), DEBUG_DEVELOPER);
+    debugging('Error retrieving configuration: ' . $e->getMessage(), DEBUG_DEVELOPER);
 }
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('settings', 'local_forum_ai')  . format_string($forum->name));
 
-// Resto del formulario.
+// Rest of the form.
 echo '<div class="container-fluid">';
 echo '<form method="post" action="' . $PAGE->url . '" class="form">';
 echo '<input type="hidden" name="action" value="save">';

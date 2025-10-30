@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Configuración del plugin Forum AI.
+ * Forum AI plugin configuration.
  *
  * @package    local_forum_ai
  * @category   admin
@@ -30,7 +30,7 @@ $functions = [
         'classname'   => 'local_forum_ai\\external\\get_details',
         'methodname'  => 'execute',
         'classpath'   => '',
-        'description' => 'Obtiene detalles del debate y respuesta AI',
+        'description' => 'Get details of the debate and AI response',
         'type'        => 'read',
         'ajax'        => true,
     ],
@@ -39,7 +39,7 @@ $functions = [
         'classname'   => 'local_forum_ai\\external\\approve_response',
         'methodname'  => 'execute',
         'classpath'   => '',
-        'description' => 'Aprueba o rechaza respuesta AI',
+        'description' => 'Approve or reject AI response',
         'type'        => 'write',
         'ajax'        => true,
     ],
@@ -47,7 +47,7 @@ $functions = [
         'classname'   => 'local_forum_ai\\external\\update_response',
         'methodname'  => 'execute',
         'classpath'   => '',
-        'description' => 'Actualiza el mensaje generado por la IA en un pending',
+        'description' => 'Update the AI-generated message to a pending status.',
         'type'        => 'write',
         'ajax'        => true,
     ],

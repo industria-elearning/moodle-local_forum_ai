@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Página que lista las respuestas pendientes de aprobación en Forum AI.
+ * Page that lists pending responses for approval in Forum AI.
  *
  * @package    local_forum_ai
  * @category   admin

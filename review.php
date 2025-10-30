@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Página para revisar y aprobar o rechazar respuestas generadas por AI.
+ * Page to review and approve or reject AI-generated responses.
  *
  * @package    local_forum_ai
  * @category   admin

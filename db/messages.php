@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Definición de proveedores de mensajes del plugin Forum AI.
+ * Definition of message providers for the Forum AI plugin.
  *
  * @package    local_forum_ai
  * @category   message

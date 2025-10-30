@@ -19,7 +19,7 @@
  *
  * @package   local_forum_ai
  * @category  test
- * @copyright  2025 Datacurso
+ * @copyright 2025 Datacurso
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -180,8 +180,8 @@ final class privacy_provider_test extends provider_testcase {
         $record->creator_userid = $userid;
         $record->discussionid = rand(1, 10);
         $record->forumid = rand(1, 5);
-        $record->message = 'Mensaje generado por la IA';
-        $record->subject = 'Tema de prueba';
+        $record->message = 'AI-generated message';
+        $record->subject = 'Test topic';
         $record->status = 'approved';
         $record->approved_at = time();
         $record->approval_token = md5(uniqid((string)$userid, true));

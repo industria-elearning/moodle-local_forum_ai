@@ -5,7 +5,7 @@ import { get_string as getString } from 'core/str';
 import { renderPost } from './utils/renderPost';
 
 /**
- * Inicializa los listeners para mostrar historial de respuestas AI.
+ * Initializes the listeners to display AI response history.
  */
 export const init = () => {
     document.querySelectorAll('.view-details').forEach(btn => {
@@ -52,10 +52,10 @@ export const init = () => {
 };
 
 /**
- * Construye el HTML para el modal de historial.
+ * Builds the HTML for the history modal.
  *
- * @param {Object} data Datos recibidos del servicio AJAX
- * @param {Object} strings Cadenas traducidas
+ * @param {Object} data Data received from the AJAX service
+ * @param {Object} strings Translated strings
  * @returns {Promise<string>} HTML
  */
 async function renderDiscussion(data, strings) {

@@ -91,7 +91,7 @@ class observer {
             try {
                 self::discussion_created($singleevent);
             } catch (\Throwable $e) {
-                debugging('Error en AI durante la creación del foro: ' . $e->getMessage(), DEBUG_DEVELOPER);
+                debugging('AI error during forum creation: ' . $e->getMessage(), DEBUG_DEVELOPER);
 
                 \core\notification::add(
                     get_string('error_airequest', 'local_forum_ai', $e->getMessage()),
@@ -103,7 +103,7 @@ class observer {
 
             return true;
         } catch (\Exception $e) {
-            debugging('Error general en course_module_created: ' . $e->getMessage(), DEBUG_DEVELOPER);
+            debugging('General error in course module created: ' . $e->getMessage(), DEBUG_DEVELOPER);
 
             \core\notification::add(
                 get_string('error_airequest', 'local_forum_ai', $e->getMessage()),
@@ -165,7 +165,7 @@ class observer {
                     self::create_auto_reply($discussion, $airesponse);
                 }
             } catch (\Throwable $e) {
-                debugging('Error al comunicarse con el servicio de IA: ' . $e->getMessage(), DEBUG_DEVELOPER);
+                debugging('Error communicating with the AI service: ' . $e->getMessage(), DEBUG_DEVELOPER);
 
                 \core\notification::add(
                     get_string('error_airequest', 'local_forum_ai', $e->getMessage()),
@@ -177,7 +177,7 @@ class observer {
 
             return true;
         } catch (\Exception $e) {
-            debugging('Error general en discussion_created: ' . $e->getMessage(), DEBUG_DEVELOPER);
+            debugging('General error in discussion_created: ' . $e->getMessage(), DEBUG_DEVELOPER);
             return true;
         }
     }

@@ -28,15 +28,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
-    'local/forum_ai:view_response' => [
-        'riskbitmask' => RISK_XSS,
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => [
-            'manager' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-        ],
-    ],
     'local/forum_ai:approveresponses' => [
     'riskbitmask' => RISK_DATALOSS,
     'captype' => 'write',
@@ -47,5 +38,4 @@ $capabilities = [
         'coursecreator' => CAP_ALLOW,
     ],
     ],
-
 ];
