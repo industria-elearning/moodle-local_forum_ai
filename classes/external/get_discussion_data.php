@@ -51,7 +51,13 @@ class get_discussion_data extends external_api {
     }
 
     /**
-     * Main function logic.
+     * Executes the web service logic to retrieve discussion and AI response data.
+     *
+     * @param string $token The approval token used to identify the pending AI response.
+     * @return array An array containing discussion, forum, course, AI response, and posts data.
+     * @throws \invalid_parameter_exception If parameters are invalid.
+     * @throws \required_capability_exception If the user lacks permission to view the discussion.
+     * @throws \dml_missing_record_exception If a required record is not found.
      */
     public static function execute($token) {
         global $DB, $USER;
