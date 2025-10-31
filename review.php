@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Página para revisar y aprobar o rechazar respuestas generadas por AI.
+ * Page to review and approve or reject AI-generated responses.
  *
  * @package    local_forum_ai
  * @category   admin
@@ -40,7 +40,6 @@ try {
     );
 
     if (!$pending) {
-        // Configuración de la página aunque no haya pending.
         $PAGE->set_url('/local/forum_ai/review.php', ['token' => $token]);
         $PAGE->set_pagelayout('incourse');
         $PAGE->set_title(get_string('reviewtitle', 'local_forum_ai'));
@@ -48,7 +47,6 @@ try {
 
         echo $OUTPUT->header();
 
-        // Mensaje bonito con Bootstrap.
         echo $OUTPUT->notification(
             get_string('alreadysubmitted', 'local_forum_ai'),
             \core\output\notification::NOTIFY_INFO
@@ -67,20 +65,7 @@ try {
 
     $context = context_course::instance($course->id);
 
-    // Validar roles permitidos.
-    $roles = get_user_roles($context, $USER->id);
-    $allowedroles = ['manager', 'editingteacher'];
-    $hasrole = false;
-    foreach ($roles as $role) {
-        if (in_array($role->shortname, $allowedroles, true)) {
-            $hasrole = true;
-            break;
-        }
-    }
-
-    if (!$hasrole) {
-        throw new moodle_exception('nopermission', 'local_forum_ai');
-    }
+    require_capability('local/forum_ai:approveresponses', $context);
 
     $PAGE->set_url('/local/forum_ai/review.php', ['token' => $token]);
     $PAGE->set_context($context);
@@ -131,5 +116,6 @@ try {
     echo $OUTPUT->render_from_template('local_forum_ai/review', $data);
     echo $OUTPUT->footer();
 } catch (Exception $e) {
-    throw new moodle_exception($e->getMessage(), 'local_forum_ai');
+    debugging('Error in review.php: ' . $e->getMessage(), DEBUG_DEVELOPER);
+    throw new moodle_exception('error_airequest', 'local_forum_ai', '', $e->getMessage());
 }

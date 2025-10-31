@@ -1,20 +1,35 @@
 import Ajax from 'core/ajax';
 import Notification from 'core/notification';
+import { get_string as getString } from 'core/str';
 
 /**
- * Controlador JS para la página de revisión de respuesta AI.
+ * JS controller for the AI response review page.
  */
-export const init = () => {
+export const init = async () => {
     const editBtn = document.getElementById("edit-btn");
     const viewDiv = document.getElementById("airesponse-view");
     const editForm = document.getElementById("airesponse-edit");
     const cancelBtn = document.getElementById("cancel-edit");
     const textarea = editForm ? editForm.querySelector("textarea[name='message']") : null;
     const saveBtn = editForm ? editForm.querySelector("button[type='submit']") : null;
-
     const token = editForm ? editForm.dataset.token : null;
 
-    // --- Alternar edición ---
+    // Preload strings used throughout the UI
+    const [
+        strUpdatedSuccess,
+        strUpdatedError,
+        strApproved,
+        strRejected,
+        strActionFailed
+    ] = await Promise.all([
+        getString('response_updated', 'local_forum_ai'),
+        getString('response_update_failed', 'local_forum_ai'),
+        getString('response_approved', 'local_forum_ai'),
+        getString('response_rejected', 'local_forum_ai'),
+        getString('action_failed', 'local_forum_ai'),
+    ]);
+
+    // --- Toggle editing ---
     if (editBtn) {
         editBtn.addEventListener("click", () => {
             viewDiv.style.display = "none";
@@ -29,7 +44,7 @@ export const init = () => {
         });
     }
 
-    // --- Guardar cambios por AJAX ---
+    // --- Save changes via AJAX ---
     if (saveBtn) {
         saveBtn.addEventListener("click", e => {
             e.preventDefault();
@@ -40,20 +55,20 @@ export const init = () => {
                 args: { token: token, message: newMessage },
             }])[0].done(response => {
                 if (response.status === "ok") {
-                    // Reemplazar contenido en vista normal
+                    // Replace content in normal view
                     viewDiv.querySelector(".card-text").innerHTML = response.message;
 
                     Notification.addNotification({
-                        message: "Respuesta actualizada correctamente.",
+                        message: strUpdatedSuccess,
                         type: "success"
                     });
 
-                    // Volver a vista normal
+                    // Return to normal view
                     editForm.style.display = "none";
                     viewDiv.style.display = "block";
                 } else {
                     Notification.addNotification({
-                        message: "No se pudo actualizar la respuesta.",
+                        message: strUpdatedError,
                         type: "error"
                     });
                 }
@@ -61,7 +76,7 @@ export const init = () => {
         });
     }
 
-    // --- Aprobar / Rechazar ---
+    // --- Approve / Reject ---
     document.querySelectorAll(".action-btn").forEach(btn => {
         btn.addEventListener("click", e => {
             e.preventDefault();
@@ -75,18 +90,17 @@ export const init = () => {
             }])[0].done(response => {
                 if (response.success) {
                     Notification.addNotification({
-                        message: action === "approve"
-                            ? "Respuesta AI aprobada y publicada con éxito."
-                            : "Respuesta AI rechazada.",
+                        message: action === "approve" ? strApproved : strRejected,
                         type: "success"
                     });
 
                     setTimeout(() => {
-                        window.location.href = M.cfg.wwwroot + "/mod/forum/discuss.php?d=" + btn.dataset.discussionid;
+                        window.location.href =
+                            `${M.cfg.wwwroot}/mod/forum/discuss.php?d=${btn.dataset.discussionid}`;
                     }, 1500);
                 } else {
                     Notification.addNotification({
-                        message: "No se pudo procesar la acción.",
+                        message: strActionFailed,
                         type: "error"
                     });
                 }

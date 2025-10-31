@@ -15,10 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Servicio externo para actualizar la respuesta AI pendiente en un foro.
+ * External service to update a pending AI response in a forum.
  *
- * Define la función webservice `local_forum_ai_update_response`
- * que permite modificar el mensaje de una respuesta AI antes de su aprobación.
+ * Defines the webservice function `local_forum_ai_update_response`
+ * that allows modifying the message of an AI response before its approval.
  *
  * @package    local_forum_ai
  * @category   external
@@ -42,23 +42,23 @@ use context_system;
  */
 class update_response extends external_api {
     /**
-     * Define los parámetros de entrada de la función webservice.
+     * Defines the input parameters of the webservice function.
      *
      * @return external_function_parameters
      */
     public static function execute_parameters() {
         return new external_function_parameters([
-            'token'   => new external_value(PARAM_ALPHANUMEXT, 'Token de aprobación'),
-            'message' => new external_value(PARAM_RAW, 'Nuevo mensaje de la IA'),
+            'token'   => new external_value(PARAM_ALPHANUMEXT, 'Approval token'),
+            'message' => new external_value(PARAM_RAW, 'New AI message'),
         ]);
     }
 
     /**
-     * Ejecuta la actualización de un mensaje AI pendiente.
+     * Executes the update of a pending AI message.
      *
-     * @param string $token Token de aprobación
-     * @param string $message Nuevo mensaje de la IA
-     * @return array Resultado con estado y mensaje actualizado
+     * @param string $token Approval token
+     * @param string $message New AI message
+     * @return array Result with status and updated message
      */
     public static function execute($token, $message) {
         global $DB;
@@ -70,7 +70,7 @@ class update_response extends external_api {
 
         $pending = $DB->get_record('local_forum_ai_pending', ['approval_token' => $params['token']], '*', MUST_EXIST);
 
-        // Validación de permisos.
+        // Permission validation.
         $context = context_system::instance();
         self::validate_context($context);
         require_capability('mod/forum:replypost', $context);
@@ -86,14 +86,14 @@ class update_response extends external_api {
     }
 
     /**
-     * Define la estructura de retorno de la función webservice.
+     * Defines the return structure of the webservice function.
      *
      * @return \external_single_structure
      */
     public static function execute_returns() {
         return new \external_single_structure([
-            'status'  => new external_value(PARAM_TEXT, 'Estado de la operación'),
-            'message' => new external_value(PARAM_RAW, 'Mensaje actualizado'),
+            'status'  => new external_value(PARAM_TEXT, 'Operation status'),
+            'message' => new external_value(PARAM_RAW, 'Updated message'),
         ]);
     }
 }

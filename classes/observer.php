@@ -91,7 +91,7 @@ class observer {
             try {
                 self::discussion_created($singleevent);
             } catch (\Throwable $e) {
-                debugging('Error en AI durante la creación del foro: ' . $e->getMessage(), DEBUG_DEVELOPER);
+                debugging('AI error during forum creation: ' . $e->getMessage(), DEBUG_DEVELOPER);
 
                 \core\notification::add(
                     get_string('error_airequest', 'local_forum_ai', $e->getMessage()),
@@ -103,7 +103,7 @@ class observer {
 
             return true;
         } catch (\Exception $e) {
-            debugging('Error general en course_module_created: ' . $e->getMessage(), DEBUG_DEVELOPER);
+            debugging('General error in course module created: ' . $e->getMessage(), DEBUG_DEVELOPER);
 
             \core\notification::add(
                 get_string('error_airequest', 'local_forum_ai', $e->getMessage()),
@@ -165,7 +165,7 @@ class observer {
                     self::create_auto_reply($discussion, $airesponse);
                 }
             } catch (\Throwable $e) {
-                debugging('Error al comunicarse con el servicio de IA: ' . $e->getMessage(), DEBUG_DEVELOPER);
+                debugging('Error communicating with the AI service: ' . $e->getMessage(), DEBUG_DEVELOPER);
 
                 \core\notification::add(
                     get_string('error_airequest', 'local_forum_ai', $e->getMessage()),
@@ -177,7 +177,7 @@ class observer {
 
             return true;
         } catch (\Exception $e) {
-            debugging('Error general en discussion_created: ' . $e->getMessage(), DEBUG_DEVELOPER);
+            debugging('General error in discussion_created: ' . $e->getMessage(), DEBUG_DEVELOPER);
             return true;
         }
     }
@@ -370,7 +370,7 @@ class observer {
 
         try {
             $course = $DB->get_record('course', ['id' => $discussion->course], '*', MUST_EXIST);
-            $teachers = get_editingteachers($course->id);
+            $teachers = local_forum_ai_get_editingteachers($course->id);
 
             if (empty($teachers)) {
                 return false;
@@ -393,5 +393,26 @@ class observer {
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    /**
+     * Triggered when a course module is deleted.
+     *
+     * @param \core\event\course_module_deleted $event
+     * @return void
+     */
+    public static function forum_deleted(\core\event\course_module_deleted $event): void {
+        global $DB;
+
+        // Check if the deleted module is a forum.
+        if ($event->other['modulename'] !== 'forum') {
+            return;
+        }
+
+        $forumid = $event->other['instanceid'];
+
+        // Delete related records from plugin tables.
+        $DB->delete_records('local_forum_ai_config', ['forumid' => $forumid]);
+        $DB->delete_records('local_forum_ai_pending', ['forumid' => $forumid]);
     }
 }

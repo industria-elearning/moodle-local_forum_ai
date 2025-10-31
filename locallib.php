@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Funciones auxiliares para el plugin Forum AI.
+ * Helper functions for the Forum AI plugin.
  *
  * @package    local_forum_ai
  * @copyright  2025 Datacurso
@@ -23,7 +23,7 @@
  */
 
 /**
- * Limpia registros inválidos en la tabla de pendientes.
+ * Cleans invalid records in the pending table.
  *
  * @package local_forum_ai
  * @return void
@@ -31,22 +31,26 @@
 function local_forum_ai_cleanup_pending() {
     global $DB;
 
-    // Elimina registros con foros inexistentes.
-    $DB->execute("DELETE FROM {local_forum_ai_pending}
-                   WHERE forumid NOT IN (SELECT id FROM {forum})");
+    // Deletes records with non-existent forums.
+    $DB->delete_records_select(
+        'local_forum_ai_pending',
+        'forumid NOT IN (SELECT id FROM {forum})'
+    );
 
-    // Elimina registros con discusiones inexistentes.
-    $DB->execute("DELETE FROM {local_forum_ai_pending}
-                   WHERE discussionid NOT IN (SELECT id FROM {forum_discussions})");
+    // Deletes records with non-existent discussions.
+    $DB->delete_records_select(
+        'local_forum_ai_pending',
+        'discussionid NOT IN (SELECT id FROM {forum_discussions})'
+    );
 }
 
 /**
- * Obtiene la lista de respuestas pendientes.
+ * Gets the list of pending responses.
  *
  * @package local_forum_ai
- * @param int $courseid ID del curso.
- * @param int $forumid (opcional) ID del foro para filtrar.
- * @return array lista de objetos con datos de pendientes.
+ * @param int $courseid Course ID.
+ * @param int $forumid (optional) Forum ID to filter.
+ * @return array list of objects with pending data.
  */
 function local_forum_ai_get_pending(int $courseid, int $forumid = 0) {
     global $DB;
@@ -84,12 +88,12 @@ function local_forum_ai_get_pending(int $courseid, int $forumid = 0) {
 }
 
 /**
- * Obtiene la lista de historial de respuestas.
+ * Gets the list of response history.
  *
  * @package local_forum_ai
- * @param int $courseid ID del curso.
- * @param int $forumid (opcional) ID del foro para filtrar.
- * @return array lista de objetos de respuestas.
+ * @param int $courseid Course ID.
+ * @param int $forumid (optional) Forum ID to filter.
+ * @return array list of response objects.
  */
 function local_forum_ai_get_history(int $courseid, int $forumid = 0) {
     global $DB;
@@ -122,14 +126,14 @@ function local_forum_ai_get_history(int $courseid, int $forumid = 0) {
 }
 
 /**
- * Devuelve los profesores (usuarios con rol editingteacher) de un curso.
+ * Returns the teachers (users with editingteacher role) of a course.
  *
  * @package local_forum_ai
- * @param int $courseid ID del curso.
- * @param bool $single Si se quiere devolver solo uno.
+ * @param int $courseid Course ID.
+ * @param bool $single Whether to return only one.
  * @return \stdClass|array|null
  */
-function get_editingteachers(int $courseid, bool $single = false) {
+function local_forum_ai_get_editingteachers(int $courseid, bool $single = false) {
     global $DB;
 
     $context = \context_course::instance($courseid);
@@ -155,9 +159,9 @@ function get_editingteachers(int $courseid, bool $single = false) {
 }
 
 /**
- * Limpia respuestas AI pendientes de foros caducados.
+ * Cleans pending AI responses from expired forums.
  *
- * @return int Número de registros eliminados.
+ * @return int Number of deleted records.
  */
 function local_forum_ai_cleanup_expired(): int {
     global $DB;

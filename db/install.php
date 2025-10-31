@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Code to be executed after the plugin's database scheme has been installed is defined here.
+ * Code to be executed after the plugin's database schema has been installed.
  *
  * @package     local_forum_ai
  * @category    upgrade
@@ -28,9 +28,10 @@
  */
 function xmldb_local_forum_ai_install() {
 
+    // Default AI behavior settings.
     set_config('default_enabled', 0, 'local_forum_ai');
-    set_config('default_bot_userid', '', 'local_forum_ai');
-    set_config('default_reply_message', 'Gracias por tu participación. Un moderador revisará tu mensaje.', 'local_forum_ai');
+    set_config('default_require_approval', 1, 'local_forum_ai');
+    set_config('default_reply_message', get_string('default_reply_message', 'local_forum_ai'), 'local_forum_ai');
 
     return true;
 }

@@ -40,4 +40,11 @@ $observers = [
         'internal'    => false,
         'priority'    => 9999,
     ],
+    [
+        'eventname'   => '\core\event\course_module_deleted',
+        'callback'    => '\local_forum_ai\observer::forum_deleted',
+        'includefile' => '/local/forum_ai/classes/observer.php',
+        'internal'    => false,
+        'priority'    => 9999,
+    ],
 ];

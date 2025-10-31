@@ -15,21 +15,27 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Definition of message providers for the Forum AI plugin.
+ * Capability definitions for DataCurso
+ *
+ * Documentation: {@link https://moodledev.io/docs/apis/subsystems/access}
  *
  * @package    local_forum_ai
- * @category   message
+ * @category   access
  * @copyright  2025 Datacurso
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$messageproviders = [
-    'ai_approval_request' => [
-        'defaults' => [
-            'popup' => MESSAGE_PERMITTED + MESSAGE_DEFAULT_ENABLED,
-            'email' => MESSAGE_PERMITTED,
-        ],
+$capabilities = [
+    'local/forum_ai:approveresponses' => [
+    'riskbitmask' => RISK_DATALOSS,
+    'captype' => 'write',
+    'contextlevel' => CONTEXT_COURSE,
+    'archetypes' => [
+        'manager' => CAP_ALLOW,
+        'editingteacher' => CAP_ALLOW,
+        'coursecreator' => CAP_ALLOW,
+    ],
     ],
 ];

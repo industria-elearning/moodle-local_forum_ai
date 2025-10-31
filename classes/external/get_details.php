@@ -15,10 +15,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Servicio externo para obtener detalles de una discusión con respuesta AI.
+ * External service to obtain details of a discussion with AI response.
  *
- * Define la función webservice `local_forum_ai_get_details`
- * que devuelve curso, foro, discusión, posts y estado de la respuesta AI.
+ * Define the webservice function `local_forum_ai_get_details`
+ * which returns course, forum, discussion, posts and AI response status.
  *
  * @package    local_forum_ai
  * @category   external
@@ -45,7 +45,7 @@ use moodle_exception;
  */
 class get_details extends external_api {
     /**
-     * Define los parámetros de entrada de la función webservice.
+     * Define the input parameters of the webservice function.
      *
      * @return external_function_parameters
      */
@@ -56,11 +56,11 @@ class get_details extends external_api {
     }
 
     /**
-     * Ejecuta la obtención de detalles de discusión y respuesta AI.
+     * Executes the AI ​​discussion and response detail retrieval.
      *
-     * @param string $token Token de aprobación
-     * @return array Datos del curso, foro, discusión y posts
-     * @throws moodle_exception Si no se encuentra el registro o falta permiso
+     * @param string $token Approval token
+     * @return array Course information, forum, discussion, and posts
+     * @throws moodle_exception If the record is not found or permission is missing
      */
     public static function execute($token) {
         global $DB;
@@ -94,10 +94,10 @@ class get_details extends external_api {
     }
 
     /**
-     * Construye la estructura jerárquica de posts en orden correcto.
+     * Build the hierarchical structure of posts in the correct order.
      *
-     * @param array $posts Lista de posts
-     * @return array Posts en estructura plana jerárquica
+     * @param array $posts List of posts
+     * @return array Posts in a flat hierarchical structure
      */
     private static function buildhierarchicalposts($posts) {
         global $DB;
@@ -105,7 +105,6 @@ class get_details extends external_api {
         $postsbyid = [];
         $hierarchical = [];
 
-        // Formatear todos los posts y indexarlos por ID.
         foreach ($posts as $post) {
             $user = $DB->get_record('user', ['id' => $post->userid], 'id,firstname,lastname');
             $formattedpost = [
@@ -122,67 +121,56 @@ class get_details extends external_api {
             $postsbyid[$post->id] = $formattedpost;
         }
 
-        // Construir la estructura jerárquica.
         foreach ($postsbyid as &$post) {
             if ($post['parent'] == 0) {
-                // Es un post principal.
                 $hierarchical[] = &$post;
             } else {
-                // Es una respuesta, agregarlo a su padre.
                 if (isset($postsbyid[$post['parent']])) {
                     $postsbyid[$post['parent']]['children'][] = &$post;
                 }
             }
         }
 
-        // Ordenar hijos por fecha de creación.
         self::sortchildrenrecursive($hierarchical);
 
-        // Convertir a estructura plana manteniendo el orden jerárquico.
         return self::flattenhierarchical($hierarchical, 0);
     }
 
     /**
-     * Ordena recursivamente los hijos por fecha de creación.
+     * Recursively sort children by creation date.
      *
      * @param array $posts
      */
     private static function sortchildrenrecursive(&$posts) {
         foreach ($posts as &$post) {
             if (!empty($post['children'])) {
-                // Ordenar hijos por timestamp de creación.
                 usort($post['children'], function ($a, $b) {
                     return $a['created_timestamp'] - $b['created_timestamp'];
                 });
 
-                // Recursivamente ordenar los hijos de los hijos.
                 self::sortchildrenrecursive($post['children']);
             }
         }
     }
 
     /**
-     * Convierte la estructura jerárquica a plana manteniendo el orden.
+     * Convert the hierarchical structure to a flat one while maintaining order.
      *
      * @param array $posts
-     * @param int $level Nivel actual
-     * @return array Posts aplanados con niveles
+     * @param int $level Current level
+     * @return array Flattened posts with levels
      */
     private static function flattenhierarchical($posts, $level) {
         $result = [];
 
         foreach ($posts as $post) {
-            // Establecer el nivel.
             $post['level'] = $level;
 
-            // Guardar los hijos antes de eliminarlos.
             $children = $post['children'];
             unset($post['children']);
 
-            // Agregar el post actual.
             $result[] = $post;
 
-            // Agregar los hijos recursivamente.
             if (!empty($children)) {
                 $childposts = self::flattenhierarchical($children, $level + 1);
                 $result = array_merge($result, $childposts);
@@ -193,29 +181,29 @@ class get_details extends external_api {
     }
 
     /**
-     * Define la estructura de retorno de la función webservice.
+     * Define the return structure of the web service function.
      *
      * @return external_single_structure
      */
     public static function execute_returns() {
         return new external_single_structure([
-            'course' => new external_value(PARAM_TEXT, 'Nombre del curso'),
-            'forum' => new external_value(PARAM_TEXT, 'Nombre del foro'),
-            'discussion' => new external_value(PARAM_TEXT, 'Título del debate'),
-            'posts' => new external_multiple_structure(
-                new external_single_structure([
-                    'id' => new external_value(PARAM_INT, 'ID del post'),
-                    'parent' => new external_value(PARAM_INT, 'ID del post padre'),
-                    'subject' => new external_value(PARAM_TEXT, 'Asunto'),
-                    'message' => new external_value(PARAM_RAW, 'Mensaje'),
-                    'author' => new external_value(PARAM_TEXT, 'Autor'),
-                    'created' => new external_value(PARAM_TEXT, 'Fecha de creación'),
-                    'level' => new external_value(PARAM_INT, 'Nivel de anidación'),
-                ])
-            ),
-            'airesponse' => new external_value(PARAM_RAW, 'Respuesta AI propuesta'),
-            'token' => new external_value(PARAM_ALPHANUMEXT, 'Token de aprobación'),
-            'status' => new external_value(PARAM_ALPHA, 'Estado del mensaje (pending, approved, rejected)'),
+        'course' => new external_value(PARAM_TEXT, 'Course name'),
+        'forum' => new external_value(PARAM_TEXT, 'Forum name'),
+        'discussion' => new external_value(PARAM_TEXT, 'Discussion title'),
+        'posts' => new external_multiple_structure(
+            new external_single_structure([
+                'id' => new external_value(PARAM_INT, 'Post ID'),
+                'parent' => new external_value(PARAM_INT, 'Parent post ID'),
+                'subject' => new external_value(PARAM_TEXT, 'Subject'),
+                'message' => new external_value(PARAM_RAW, 'Message'),
+                'author' => new external_value(PARAM_TEXT, 'Author'),
+                'created' => new external_value(PARAM_TEXT, 'Creation date'),
+                'level' => new external_value(PARAM_INT, 'Nesting level'),
+            ])
+        ),
+        'airesponse' => new external_value(PARAM_RAW, 'Proposed AI response'),
+        'token' => new external_value(PARAM_ALPHANUMEXT, 'Approval token'),
+        'status' => new external_value(PARAM_ALPHA, 'Message status (pending, approved, rejected)'),
         ]);
     }
 }

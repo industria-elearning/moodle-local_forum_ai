@@ -5,10 +5,10 @@ import { renderPost } from './utils/renderPost';
 import { get_string as getString } from 'core/str';
 
 /**
- * Inicializa los listeners para mostrar detalles de respuestas AI.
+ * Initializes the listeners to display AI response details.
  */
 export const init = () => {
-    // Botón de ver detalles
+    // View details button
     document.querySelectorAll('.view-details').forEach(btn => {
         btn.addEventListener('click', e => {
             const token = e.currentTarget.dataset.token;
@@ -17,7 +17,7 @@ export const init = () => {
                 methodname: 'local_forum_ai_get_details',
                 args: { token: token },
             }])[0].done(async data => {
-                // Precargar cadenas
+                // Preload strings
                 const [
                     modalTitle,
                     discussionLabel,
@@ -56,7 +56,7 @@ export const init = () => {
         });
     });
 
-    // Botones de aprobar/rechazar desde la tabla
+    // Approve/reject buttons from the table
     document.querySelectorAll('.action-btn').forEach(btn => {
         btn.addEventListener('click', e => {
             e.preventDefault();
@@ -77,18 +77,18 @@ export const init = () => {
 };
 
 /**
- * Construye el HTML para el modal de detalles.
+ * Builds the HTML for the details modal.
  *
- * @param {Object} data Datos recibidos del servicio AJAX.
- * @param {boolean} editMode Si debe iniciar directamente en modo edición.
- * @param {Object} strings Conjunto de cadenas traducidas
- * @param {string} strings.discussionLabel Texto para el título del debate
- * @param {string} strings.noPosts Texto para cuando no hay posts
- * @param {string} strings.aiResponseProposed Texto para la respuesta AI propuesta
- * @param {string} strings.saveLabel Texto para el botón Guardar
- * @param {string} strings.saveApproveLabel Texto para el botón Guardar y Aprobar
- * @param {string} strings.rejectLabel Texto para el botón Rechazar
- * @returns {Promise<string>} HTML generado
+ * @param {Object} data Data received from the AJAX service.
+ * @param {boolean} editMode Whether it should start directly in edit mode.
+ * @param {Object} strings Set of translated strings
+ * @param {string} strings.discussionLabel Text for the discussion title
+ * @param {string} strings.noPosts Text for when there are no posts
+ * @param {string} strings.aiResponseProposed Text for the proposed AI response
+ * @param {string} strings.saveLabel Text for the Save button
+ * @param {string} strings.saveApproveLabel Text for the Save and Approve button
+ * @param {string} strings.rejectLabel Text for the Reject button
+ * @returns {Promise<string>} Generated HTML
  */
 async function renderDiscussion(data, editMode = false, strings) {
     let html = `<h4>${data.course} / ${data.forum}</h4>
@@ -130,10 +130,10 @@ async function renderDiscussion(data, editMode = false, strings) {
 }
 
 /**
- * Inicializa los handlers para editar/guardar dentro de un modal específico.
+ * Initializes the handlers to edit/save inside a specific modal.
  *
- * @param {object} root El contenedor raíz del modal.
- * @param {string} token Token único de aprobación asociado.
+ * @param {object} root The root container of the modal.
+ * @param {string} token Unique approval token associated.
  */
 function initAiEditHandlers(root, token) {
     root.on('click', '.save-ai', e => {

@@ -16,33 +16,33 @@
 }}
 {{!
     @template local_forum_ai/review
-    Plantilla para revisar respuestas AI.
+    Template for reviewing AI responses.
 
     Example context (json):
     {
-      "strdiscussioninfo": "Información de la discusión",
-      "strcourse": "Curso",
-      "course": "Matemáticas 101",
-      "strforum": "Foro",
-      "forum": "Debate inicial",
-      "strdiscussion": "Discusión",
-      "discussion": "Tema de ejemplo",
-      "strcreated": "Creado",
+      "strdiscussioninfo": "Discussion information",
+      "strcourse": "Course",
+      "course": "Mathematics 101",
+      "strforum": "Forum",
+      "forum": "Initial debate",
+      "strdiscussion": "Discussion",
+      "discussion": "Example topic",
+      "strcreated": "Created",
       "timecreated": "2025-09-25",
-      "stroriginalmessage": "Mensaje original",
-      "originalsubject": "Asunto original",
-      "originalmessage": "<p>Este es un mensaje de prueba</p>",
-      "author": "Profesor X",
+      "stroriginalmessage": "Original message",
+      "originalsubject": "Original subject",
+      "originalmessage": "<p>This is a test message</p>",
+      "author": "Professor X",
       "originaldate": "2025-09-20",
-      "straiproposed": "Respuesta propuesta por AI",
-      "aisubject": "Asunto AI",
-      "aimessage": "<p>Mensaje generado por AI</p>",
-      "aiformatted": "Texto editable AI",
-      "strsave": "Guardar",
-      "strcancel": "Cancelar",
-      "strapprove": "Aprobar",
-      "strreject": "Rechazar",
-      "strbacktodiscussion": "Volver a la discusión",
+      "straiproposed": "AI proposed response",
+      "aisubject": "AI subject",
+      "aimessage": "<p>AI generated message</p>",
+      "aiformatted": "AI editable text",
+      "strsave": "Save",
+      "strcancel": "Cancel",
+      "strapprove": "Approve",
+      "strreject": "Reject",
+      "strbacktodiscussion": "Back to discussion",
       "discussionid": "123",
       "forumurl": "http://example.com/forum/123",
       "token": "abc123"
@@ -51,7 +51,7 @@
 
 {{#headerlogo}}
 <a class="local_forum_ai-logo-wrapper" href="https://datacurso.com/" target="_blank" rel="noopener noreferrer">
-    <img src="{{logourl}}" alt="Logo Datacurso" class="local_forum_ai-pluginlogo">
+    <img src="{{logourl}}" alt="Datacurso Logo" class="local_forum_ai-pluginlogo">
 </a>
 {{/headerlogo}}
 
@@ -71,7 +71,7 @@
         <h6>{{originalsubject}}</h6>
         {{{originalmessage}}}
         <br>
-        <small class="text-muted">Por: {{author}} el {{originaldate}}</small>
+        <small class="text-muted">By: {{author}} on {{originaldate}}</small>
       </div>
     </div>
   </div>
@@ -84,14 +84,14 @@
       </div>
       <div class="card-body">
 
-        <!-- Vista normal -->
+        <!-- Normal view -->
         <div id="airesponse-view" data-discussionid="{{discussionid}}">
           <h6>{{aisubject}}</h6>
           <div class="card-text">{{{aimessage}}}</div>
-          <small class="text-muted">Respuesta AI generada</small>
+          <small class="text-muted">AI generated response</small>
         </div>
 
-        <!-- Vista edición -->
+        <!-- Edit view -->
         <form id="airesponse-edit" method="post" data-token="{{token}}" style="display:none;">
           <textarea name="message" class="form-control" rows="6">{{aiformatted}}</textarea>
           <button type="submit" class="btn btn-success btn-sm mt-2">
@@ -105,7 +105,7 @@
   </div>
 </div>
 
-<!-- Botones aprobar/rechazar -->
+<!-- Approve / Reject buttons -->
 <div class="row mt-4">
   <div class="col text-center">
     <button class="btn btn-success btn-lg action-btn" data-action="approve" data-token="{{token}}" data-discussionid="{{discussionid}}">
@@ -117,7 +117,7 @@
   </div>
 </div>
 
-<!-- Botón volver -->
+<!-- Back button -->
 <div class="row mt-3">
   <div class="col text-center">
     <a href="{{forumurl}}" class="btn btn-secondary">
@@ -125,4 +125,3 @@
     </a>
   </div>
 </div>
-

@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Configuración del plugin Forum AI.
+ * Forum AI plugin configuration.
  *
  * @package    local_forum_ai
  * @category   admin
@@ -31,25 +31,9 @@ require_login();
 $courseid = required_param('courseid', PARAM_INT);
 $forumid  = optional_param('forumid', 0, PARAM_INT);
 
-$context = context_system::instance();
+$context = context_course::instance($courseid);
 
-$coursecontext = context_course::instance($courseid);
-$allowedroles = ['manager', 'editingteacher', 'coursecreator'];
-
-$hasrole = false;
-$userroles = get_user_roles($coursecontext, $USER->id, true);
-foreach ($userroles as $ur) {
-    $shortname = $DB->get_field('role', 'shortname', ['id' => $ur->roleid]);
-    if ($shortname && in_array($shortname, $allowedroles, true)) {
-        $hasrole = true;
-        break;
-    }
-}
-
-$params = ['courseid' => $courseid];
-if ($forumid) {
-    $params['forumid'] = $forumid;
-}
+require_capability('local/forum_ai:approveresponses', $context);
 
 $PAGE->set_url(new moodle_url('/local/forum_ai/history.php', $params));
 $PAGE->set_context($context);
@@ -59,18 +43,6 @@ $PAGE->set_heading(get_string('historyresponses', 'local_forum_ai'));
 $PAGE->requires->css('/local/forum_ai/styles/review.css');
 
 $PAGE->navbar->ignore_active();
-
-if (!$hasrole) {
-    echo $OUTPUT->header();
-    echo $OUTPUT->notification(
-        'No tienes permisos para ver esta página. Solo gestores y profesores pueden acceder.',
-        \core\output\notification::NOTIFY_ERROR
-    );
-    echo $OUTPUT->footer();
-    exit;
-}
-
-global $DB;
 
 local_forum_ai_cleanup_pending();
 

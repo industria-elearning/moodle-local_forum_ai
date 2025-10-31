@@ -17,10 +17,10 @@
 namespace local_forum_ai\output;
 
 /**
- * Renderizador principal para el plugin local_forum_ai.
+ * Main renderer for the local_forum_ai plugin.
  *
- * Esta clase se encarga de generar las salidas HTML para las
- * plantillas y componentes de interfaz del plugin.
+ * This class is responsible for generating the HTML output for the
+ * plugin’s templates and interface components.
  *
  * @package   local_forum_ai
  * @category  output
