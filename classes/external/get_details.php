@@ -164,7 +164,6 @@ class get_details extends external_api {
         $result = [];
 
         foreach ($posts as $post) {
-
             $post['level'] = $level;
 
             $children = $post['children'];
@@ -187,7 +186,7 @@ class get_details extends external_api {
      * @return external_single_structure
      */
     public static function execute_returns() {
-    return new external_single_structure([
+        return new external_single_structure([
         'course' => new external_value(PARAM_TEXT, 'Course name'),
         'forum' => new external_value(PARAM_TEXT, 'Forum name'),
         'discussion' => new external_value(PARAM_TEXT, 'Discussion title'),
@@ -205,6 +204,6 @@ class get_details extends external_api {
         'airesponse' => new external_value(PARAM_RAW, 'Proposed AI response'),
         'token' => new external_value(PARAM_ALPHANUMEXT, 'Approval token'),
         'status' => new external_value(PARAM_ALPHA, 'Message status (pending, approved, rejected)'),
-    ]);
-}
+        ]);
+    }
 }

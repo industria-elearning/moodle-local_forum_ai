@@ -162,21 +162,27 @@ function local_forum_ai_coursemodule_standard_elements($formwrapper, $mform) {
     $mform->addElement('header', 'local_forum_ai_header', get_string('datacurso_custom', 'local_forum_ai'));
 
     // Enable AI.
-    $mform->addElement('select', 'local_forum_ai_enabled',
+    $mform->addElement(
+        'select',
+        'local_forum_ai_enabled',
         get_string('enabled', 'local_forum_ai'),
         [0 => get_string('no'), 1 => get_string('yes')]
     );
     $mform->setDefault('local_forum_ai_enabled', $defaults->enabled);
 
     // Require approval.
-    $mform->addElement('select', 'local_forum_ai_require_approval',
+    $mform->addElement(
+        'select',
+        'local_forum_ai_require_approval',
         get_string('require_approval', 'local_forum_ai'),
         [1 => get_string('yes'), 0 => get_string('no')]
     );
     $mform->setDefault('local_forum_ai_require_approval', $defaults->require_approval);
 
     // Default AI reply message.
-    $mform->addElement('textarea', 'local_forum_ai_reply_message',
+    $mform->addElement(
+        'textarea',
+        'local_forum_ai_reply_message',
         get_string('reply_message', 'local_forum_ai'),
         'wrap="virtual" rows="3" cols="50"'
     );

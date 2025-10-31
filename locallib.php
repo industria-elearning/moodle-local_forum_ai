@@ -32,12 +32,16 @@ function local_forum_ai_cleanup_pending() {
     global $DB;
 
     // Deletes records with non-existent forums.
-    $DB->delete_records_select('local_forum_ai_pending',
-        'forumid NOT IN (SELECT id FROM {forum})');
+    $DB->delete_records_select(
+        'local_forum_ai_pending',
+        'forumid NOT IN (SELECT id FROM {forum})'
+    );
 
     // Deletes records with non-existent discussions.
-    $DB->delete_records_select('local_forum_ai_pending',
-        'discussionid NOT IN (SELECT id FROM {forum_discussions})');
+    $DB->delete_records_select(
+        'local_forum_ai_pending',
+        'discussionid NOT IN (SELECT id FROM {forum_discussions})'
+    );
 }
 
 /**

@@ -57,7 +57,7 @@ $functions = [
         'classpath'   => '',
         'description' => 'Returns discussion, posts and AI response data for a given approval token.',
         'type'        => 'read',
-        'capabilities'=> 'mod/forum:viewdiscussion',
+        'capabilities' => 'mod/forum:viewdiscussion',
         'ajax'        => true,
     ],
 ];

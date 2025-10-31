@@ -133,26 +133,26 @@ $templatedata = [
         [
             'value' => 0,
             'label' => get_string('no', 'local_forum_ai'),
-            'selected' => $config->enabled == 0
+            'selected' => $config->enabled == 0,
         ],
         [
             'value' => 1,
             'label' => get_string('yes', 'local_forum_ai'),
-            'selected' => $config->enabled == 1
-        ]
+            'selected' => $config->enabled == 1,
+        ],
     ],
     'requireapproval' => $config->require_approval,
     'requireapprovaloptions' => [
         [
             'value' => 1,
             'label' => get_string('yes', 'local_forum_ai'),
-            'selected' => $config->require_approval == 1
+            'selected' => $config->require_approval == 1,
         ],
         [
             'value' => 0,
             'label' => get_string('no', 'local_forum_ai'),
-            'selected' => $config->require_approval == 0
-        ]
+            'selected' => $config->require_approval == 0,
+        ],
     ],
     'replymessage' => $config->reply_message,
     'cancelurl' => (new moodle_url('/mod/forum/view.php', ['id' => $cm->id]))->out(false),
@@ -161,8 +161,8 @@ $templatedata = [
         'requireapproval' => get_string('require_approval', 'local_forum_ai'),
         'replymessage' => get_string('reply_message', 'local_forum_ai'),
         'save' => get_string('save', 'local_forum_ai'),
-        'cancel' => get_string('cancel', 'local_forum_ai')
-    ]
+        'cancel' => get_string('cancel', 'local_forum_ai'),
+    ],
 ];
 
 echo $OUTPUT->header();

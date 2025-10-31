@@ -34,8 +34,6 @@ use external_value;
 use external_single_structure;
 use external_multiple_structure;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * External service for retrieving discussion and AI response data.
  *
@@ -43,13 +41,12 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright 2025
  */
 class get_discussion_data extends external_api {
-
     /**
      * Define parameters for the function.
      */
     public static function execute_parameters() {
         return new external_function_parameters([
-            'token' => new external_value(PARAM_ALPHANUMEXT, 'Approval token', VALUE_REQUIRED)
+            'token' => new external_value(PARAM_ALPHANUMEXT, 'Approval token', VALUE_REQUIRED),
         ]);
     }
 
@@ -81,7 +78,7 @@ class get_discussion_data extends external_api {
             'forum'      => format_string($forum->name),
             'course'     => format_string($course->fullname),
             'posts'      => [],
-            'airesponse' => format_text($pending->message, FORMAT_HTML)
+            'airesponse' => format_text($pending->message, FORMAT_HTML),
         ];
 
         foreach ($posts as $post) {
@@ -90,7 +87,7 @@ class get_discussion_data extends external_api {
                 'subject' => format_string($post->subject),
                 'message' => format_text($post->message, $post->messageformat),
                 'author'  => fullname($user),
-                'created' => userdate($post->created)
+                'created' => userdate($post->created),
             ];
         }
 
@@ -113,7 +110,7 @@ class get_discussion_data extends external_api {
                     'author'  => new external_value(PARAM_TEXT, 'Post author'),
                     'created' => new external_value(PARAM_TEXT, 'Creation date'),
                 ])
-            )
+            ),
         ]);
     }
 }

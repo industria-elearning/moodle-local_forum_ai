@@ -14,8 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Backup handler for the local_forum_ai plugin.
  *
@@ -32,7 +30,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class backup_local_forum_ai_plugin extends backup_local_plugin {
-
     /**
      * Define the structure of the forum-level data included in the backup.
      *
@@ -49,13 +46,13 @@ class backup_local_forum_ai_plugin extends backup_local_plugin {
         // AI config table data.
         $config = new backup_nested_element('forum_ai_config', ['id'], [
             'forumid', 'enabled', 'reply_message', 'require_approval',
-            'timecreated', 'timemodified'
+            'timecreated', 'timemodified',
         ]);
 
         // Pending responses.
         $pending = new backup_nested_element('forum_ai_pending', ['id'], [
             'discussionid', 'forumid', 'creator_userid', 'subject', 'message',
-            'status', 'approval_token', 'approved_at', 'timecreated', 'timemodified'
+            'status', 'approval_token', 'approved_at', 'timecreated', 'timemodified',
         ]);
 
         // Define hierarchy.
